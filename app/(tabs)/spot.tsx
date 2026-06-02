@@ -6,7 +6,10 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
+
+import * as ImagePicker from 'expo-image-picker';
 
 import {
   collection,
@@ -14,12 +17,21 @@ import {
   getDocs,
 } from 'firebase/firestore';
 
-import { db } from '../../firebaseConfig';
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+} from 'firebase/storage';
+
+import { db, storage } from '../../firebaseConfig';
 
 export default function SpotScreen() {
   const [shopName, setShopName] = useState('');
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(5);
+  const [tags, setTags] = useState('');
+
+  const [image, setImage] = useState('');
 
   const [spots, setSpots] = useState<any[]>([]);
 
@@ -39,10 +51,44 @@ export default function SpotScreen() {
         });
       });
 
-      setSpots(tempSpots);
+      setSpots(tempSpots.reverse());
     } catch (error) {
       console.log(error);
     }
+  };
+
+  // 画像選択
+  const pickImage = async () => {
+    const result =
+      await ImagePicker.launchImageLibraryAsync({
+        mediaTypes:
+          ImagePicker.MediaTypeOptions.Images,
+        quality: 0.7,
+      });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  // 画像アップロード
+  const uploadImage = async () => {
+    if (!image) return '';
+
+    const response = await fetch(image);
+
+    const blob = await response.blob();
+
+    const filename = `spots/${Date.now()}`;
+
+    const storageRef = ref(storage, filename);
+
+    await uploadBytes(storageRef, blob);
+
+    const downloadURL =
+      await getDownloadURL(storageRef);
+
+    return downloadURL;
   };
 
   // 投稿保存
@@ -53,10 +99,18 @@ export default function SpotScreen() {
     }
 
     try {
+      let imageUrl = '';
+
+      if (image) {
+        imageUrl = await uploadImage();
+      }
+
       await addDoc(collection(db, 'spots'), {
-        shopName: shopName,
-        comment: comment,
-        rating: rating,
+        shopName,
+        comment,
+        rating,
+        tags: tags.split(' '),
+        imageUrl,
         createdAt: new Date(),
       });
 
@@ -65,6 +119,8 @@ export default function SpotScreen() {
       setShopName('');
       setComment('');
       setRating(5);
+      setTags('');
+      setImage('');
 
       fetchSpots();
     } catch (error) {
@@ -72,7 +128,6 @@ export default function SpotScreen() {
     }
   };
 
-  // 初回読み込み
   useEffect(() => {
     fetchSpots();
   }, []);
@@ -96,92 +151,129 @@ export default function SpotScreen() {
         スポット共有
       </Text>
 
-      {/* 店名入力 */}
-      <TextInput
-        placeholder="店名"
-        value={shopName}
-        onChangeText={setShopName}
-        style={{
-          backgroundColor: 'white',
-          borderRadius: 10,
-          padding: 15,
-          marginBottom: 15,
-        }}
-      />
-
-      {/* コメント入力 */}
-      <TextInput
-        placeholder="コメント"
-        value={comment}
-        onChangeText={setComment}
-        multiline
-        style={{
-          backgroundColor: 'white',
-          borderRadius: 10,
-          padding: 15,
-          height: 120,
-          marginBottom: 20,
-        }}
-      />
-
-      {/* 星評価 */}
-      <Text
-        style={{
-          fontSize: 18,
-          fontWeight: 'bold',
-          marginBottom: 10,
-        }}
-      >
-        評価
-      </Text>
-
-      <View
-        style={{
-          flexDirection: 'row',
-          marginBottom: 20,
-        }}
-      >
-        {[1, 2, 3, 4, 5].map((star) => (
-          <TouchableOpacity
-            key={star}
-            onPress={() => setRating(star)}
-          >
-            <Text
-              style={{
-                fontSize: 35,
-                marginRight: 5,
-              }}
-            >
-              {star <= rating ? '★' : '☆'}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* 投稿ボタン */}
-      <TouchableOpacity
-        onPress={saveSpot}
-        style={{
-          backgroundColor: '#4A90E2',
-          padding: 15,
-          borderRadius: 10,
-          alignItems: 'center',
-          marginBottom: 30,
-        }}
-      >
-        <Text
+      <ScrollView>
+        {/* 店名 */}
+        <TextInput
+          placeholder="店名"
+          value={shopName}
+          onChangeText={setShopName}
           style={{
-            color: 'white',
-            fontSize: 18,
-            fontWeight: 'bold',
+            backgroundColor: 'white',
+            borderRadius: 10,
+            padding: 15,
+            marginBottom: 15,
+          }}
+        />
+
+        {/* コメント */}
+        <TextInput
+          placeholder="コメント"
+          value={comment}
+          onChangeText={setComment}
+          multiline
+          style={{
+            backgroundColor: 'white',
+            borderRadius: 10,
+            padding: 15,
+            height: 120,
+            marginBottom: 15,
+          }}
+        />
+
+        {/* タグ */}
+        <TextInput
+          placeholder="#安い #WiFi #深夜営業"
+          value={tags}
+          onChangeText={setTags}
+          style={{
+            backgroundColor: 'white',
+            borderRadius: 10,
+            padding: 15,
+            marginBottom: 20,
+          }}
+        />
+
+        {/* 星評価 */}
+        <View
+          style={{
+            flexDirection: 'row',
+            marginBottom: 20,
           }}
         >
-          投稿
-        </Text>
-      </TouchableOpacity>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <TouchableOpacity
+              key={star}
+              onPress={() => setRating(star)}
+            >
+              <Text
+                style={{
+                  fontSize: 35,
+                  marginRight: 5,
+                }}
+              >
+                {star <= rating ? '★' : '☆'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      {/* 投稿一覧 */}
-      <ScrollView>
+        {/* 画像選択 */}
+        <TouchableOpacity
+          onPress={pickImage}
+          style={{
+            backgroundColor: '#999',
+            padding: 15,
+            borderRadius: 10,
+            alignItems: 'center',
+            marginBottom: 20,
+          }}
+        >
+          <Text
+            style={{
+              color: 'white',
+              fontWeight: 'bold',
+            }}
+          >
+            画像を選択
+          </Text>
+        </TouchableOpacity>
+
+        {/* プレビュー */}
+        {image ? (
+          <Image
+            source={{ uri: image }}
+            style={{
+              width: '100%',
+              height: 200,
+              borderRadius: 15,
+              marginBottom: 20,
+            }}
+          />
+        ) : null}
+
+        {/* 投稿ボタン */}
+        <TouchableOpacity
+          onPress={saveSpot}
+          style={{
+            backgroundColor: '#4A90E2',
+            padding: 15,
+            borderRadius: 10,
+            alignItems: 'center',
+            marginBottom: 30,
+          }}
+        >
+          <Text
+            style={{
+              color: 'white',
+              fontSize: 18,
+              fontWeight: 'bold',
+            }}
+          >
+            投稿
+          </Text>
+        </TouchableOpacity>
+
+        {/* 投稿一覧 */}
         {spots.map((spot) => (
           <View
             key={spot.id}
@@ -189,9 +281,21 @@ export default function SpotScreen() {
               backgroundColor: 'white',
               padding: 15,
               borderRadius: 15,
-              marginBottom: 15,
+              marginBottom: 20,
             }}
           >
+            {spot.imageUrl ? (
+              <Image
+                source={{ uri: spot.imageUrl }}
+                style={{
+                  width: '100%',
+                  height: 200,
+                  borderRadius: 10,
+                  marginBottom: 10,
+                }}
+              />
+            ) : null}
+
             <Text
               style={{
                 fontSize: 22,
@@ -209,6 +313,32 @@ export default function SpotScreen() {
             >
               {'★'.repeat(spot.rating || 0)}
             </Text>
+
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                marginTop: 10,
+              }}
+            >
+              {spot.tags?.map(
+                (tag: string, index: number) => (
+                  <Text
+                    key={index}
+                    style={{
+                      backgroundColor: '#eee',
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 20,
+                      marginRight: 8,
+                      marginBottom: 8,
+                    }}
+                  >
+                    {tag}
+                  </Text>
+                )
+              )}
+            </View>
 
             <Text
               style={{
