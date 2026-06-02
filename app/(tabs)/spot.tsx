@@ -12,8 +12,6 @@ import {
   collection,
   addDoc,
   getDocs,
-  query,
-  orderBy,
 } from 'firebase/firestore';
 
 import { db } from '../../firebaseConfig';
@@ -21,13 +19,16 @@ import { db } from '../../firebaseConfig';
 export default function SpotScreen() {
   const [shopName, setShopName] = useState('');
   const [comment, setComment] = useState('');
+  const [rating, setRating] = useState(5);
+
   const [spots, setSpots] = useState<any[]>([]);
 
   // 投稿取得
   const fetchSpots = async () => {
     try {
-      const q = query(collection(db, 'spots'), orderBy('createdAt', 'asc'));
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(
+        collection(db, 'spots')
+      );
 
       const tempSpots: any[] = [];
 
@@ -55,6 +56,7 @@ export default function SpotScreen() {
       await addDoc(collection(db, 'spots'), {
         shopName: shopName,
         comment: comment,
+        rating: rating,
         createdAt: new Date(),
       });
 
@@ -62,6 +64,7 @@ export default function SpotScreen() {
 
       setShopName('');
       setComment('');
+      setRating(5);
 
       fetchSpots();
     } catch (error) {
@@ -121,6 +124,40 @@ export default function SpotScreen() {
         }}
       />
 
+      {/* 星評価 */}
+      <Text
+        style={{
+          fontSize: 18,
+          fontWeight: 'bold',
+          marginBottom: 10,
+        }}
+      >
+        評価
+      </Text>
+
+      <View
+        style={{
+          flexDirection: 'row',
+          marginBottom: 20,
+        }}
+      >
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity
+            key={star}
+            onPress={() => setRating(star)}
+          >
+            <Text
+              style={{
+                fontSize: 35,
+                marginRight: 5,
+              }}
+            >
+              {star <= rating ? '★' : '☆'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       {/* 投稿ボタン */}
       <TouchableOpacity
         onPress={saveSpot}
@@ -151,13 +188,13 @@ export default function SpotScreen() {
             style={{
               backgroundColor: 'white',
               padding: 15,
-              borderRadius: 10,
+              borderRadius: 15,
               marginBottom: 15,
             }}
           >
             <Text
               style={{
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: 'bold',
               }}
             >
@@ -166,8 +203,18 @@ export default function SpotScreen() {
 
             <Text
               style={{
-                marginTop: 8,
+                fontSize: 22,
+                marginTop: 5,
+              }}
+            >
+              {'★'.repeat(spot.rating || 0)}
+            </Text>
+
+            <Text
+              style={{
+                marginTop: 10,
                 fontSize: 16,
+                lineHeight: 24,
               }}
             >
               {spot.comment}
