@@ -1,4 +1,5 @@
 import { View, Text } from 'react-native';
+import '../firebaseConfig';
 
 export default function HomeScreen() {
   return (
