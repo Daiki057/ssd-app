@@ -6,10 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Image,
 } from 'react-native';
-
-import * as ImagePicker from 'expo-image-picker';
 
 import {
   collection,
@@ -17,23 +14,39 @@ import {
   getDocs,
 } from 'firebase/firestore';
 
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-} from 'firebase/storage';
+import { db } from '../../firebaseConfig';
 
-import { db, storage } from '../../firebaseConfig';
+const TAG_OPTIONS = [
+  '安い',
+  'WiFi',
+  '静か',
+  '大盛り',
+  '深夜営業',
+  '勉強向け',
+  'デート向け',
+  '一人向け',
+];
 
 export default function SpotScreen() {
   const [shopName, setShopName] = useState('');
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(5);
-  const [tags, setTags] = useState('');
 
-  const [image, setImage] = useState('');
+  const [selectedTags, setSelectedTags] =
+    useState<string[]>([]);
 
   const [spots, setSpots] = useState<any[]>([]);
+
+  // タグ選択
+  const toggleTag = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(
+        selectedTags.filter((t) => t !== tag)
+      );
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
 
   // 投稿取得
   const fetchSpots = async () => {
@@ -57,40 +70,6 @@ export default function SpotScreen() {
     }
   };
 
-  // 画像選択
-  const pickImage = async () => {
-    const result =
-      await ImagePicker.launchImageLibraryAsync({
-        mediaTypes:
-          ImagePicker.MediaTypeOptions.Images,
-        quality: 0.7,
-      });
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
-
-  // 画像アップロード
-  const uploadImage = async () => {
-    if (!image) return '';
-
-    const response = await fetch(image);
-
-    const blob = await response.blob();
-
-    const filename = `spots/${Date.now()}`;
-
-    const storageRef = ref(storage, filename);
-
-    await uploadBytes(storageRef, blob);
-
-    const downloadURL =
-      await getDownloadURL(storageRef);
-
-    return downloadURL;
-  };
-
   // 投稿保存
   const saveSpot = async () => {
     if (!shopName || !comment) {
@@ -99,18 +78,11 @@ export default function SpotScreen() {
     }
 
     try {
-      let imageUrl = '';
-
-      if (image) {
-        imageUrl = await uploadImage();
-      }
-
       await addDoc(collection(db, 'spots'), {
         shopName,
         comment,
         rating,
-        tags: tags.split(' '),
-        imageUrl,
+        tags: selectedTags,
         createdAt: new Date(),
       });
 
@@ -119,8 +91,7 @@ export default function SpotScreen() {
       setShopName('');
       setComment('');
       setRating(5);
-      setTags('');
-      setImage('');
+      setSelectedTags([]);
 
       fetchSpots();
     } catch (error) {
@@ -140,18 +111,18 @@ export default function SpotScreen() {
         backgroundColor: '#f5f5f5',
       }}
     >
-      <Text
-        style={{
-          fontSize: 30,
-          fontWeight: 'bold',
-          marginTop: 60,
-          marginBottom: 30,
-        }}
-      >
-        スポット共有
-      </Text>
-
       <ScrollView>
+        <Text
+          style={{
+            fontSize: 30,
+            fontWeight: 'bold',
+            marginTop: 60,
+            marginBottom: 30,
+          }}
+        >
+          スポット共有
+        </Text>
+
         {/* 店名 */}
         <TextInput
           placeholder="店名"
@@ -176,19 +147,6 @@ export default function SpotScreen() {
             borderRadius: 10,
             padding: 15,
             height: 120,
-            marginBottom: 15,
-          }}
-        />
-
-        {/* タグ */}
-        <TextInput
-          placeholder="#安い #WiFi #深夜営業"
-          value={tags}
-          onChangeText={setTags}
-          style={{
-            backgroundColor: 'white',
-            borderRadius: 10,
-            padding: 15,
             marginBottom: 20,
           }}
         />
@@ -217,39 +175,58 @@ export default function SpotScreen() {
           ))}
         </View>
 
-        {/* 画像選択 */}
-        <TouchableOpacity
-          onPress={pickImage}
+        {/* タグ選択 */}
+        <Text
           style={{
-            backgroundColor: '#999',
-            padding: 15,
-            borderRadius: 10,
-            alignItems: 'center',
+            fontSize: 18,
+            fontWeight: 'bold',
+            marginBottom: 10,
+          }}
+        >
+          タグ
+        </Text>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
             marginBottom: 20,
           }}
         >
-          <Text
-            style={{
-              color: 'white',
-              fontWeight: 'bold',
-            }}
-          >
-            画像を選択
-          </Text>
-        </TouchableOpacity>
+          {TAG_OPTIONS.map((tag) => {
+            const isSelected =
+              selectedTags.includes(tag);
 
-        {/* プレビュー */}
-        {image ? (
-          <Image
-            source={{ uri: image }}
-            style={{
-              width: '100%',
-              height: 200,
-              borderRadius: 15,
-              marginBottom: 20,
-            }}
-          />
-        ) : null}
+            return (
+              <TouchableOpacity
+                key={tag}
+                onPress={() => toggleTag(tag)}
+                style={{
+                  backgroundColor: isSelected
+                    ? '#4A90E2'
+                    : '#ddd',
+
+                  paddingHorizontal: 15,
+                  paddingVertical: 10,
+                  borderRadius: 20,
+                  marginRight: 10,
+                  marginBottom: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    color: isSelected
+                      ? 'white'
+                      : 'black',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {tag}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
         {/* 投稿ボタン */}
         <TouchableOpacity
@@ -284,18 +261,6 @@ export default function SpotScreen() {
               marginBottom: 20,
             }}
           >
-            {spot.imageUrl ? (
-              <Image
-                source={{ uri: spot.imageUrl }}
-                style={{
-                  width: '100%',
-                  height: 200,
-                  borderRadius: 10,
-                  marginBottom: 10,
-                }}
-              />
-            ) : null}
-
             <Text
               style={{
                 fontSize: 22,
