@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 
-export default function App() {
+export default function HomeScreen() {
   return (
     <View
       style={{
@@ -21,31 +22,17 @@ export default function App() {
       </Text>
 
       <TouchableOpacity
+        onPress={() => router.push('./spot')}
         style={{
           backgroundColor: '#4A90E2',
           padding: 15,
           borderRadius: 10,
-          marginBottom: 20,
           width: 220,
           alignItems: 'center',
         }}
       >
         <Text style={{ color: 'white', fontSize: 18 }}>
           スポット共有
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={{
-          backgroundColor: '#50C878',
-          padding: 15,
-          borderRadius: 10,
-          width: 220,
-          alignItems: 'center',
-        }}
-      >
-        <Text style={{ color: 'white', fontSize: 18 }}>
-          バイト共有
         </Text>
       </TouchableOpacity>
     </View>
