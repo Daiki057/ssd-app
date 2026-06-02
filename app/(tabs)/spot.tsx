@@ -12,6 +12,8 @@ import {
   collection,
   addDoc,
   getDocs,
+  query,
+  orderBy,
 } from 'firebase/firestore';
 
 import { db } from '../../firebaseConfig';
@@ -24,9 +26,8 @@ export default function SpotScreen() {
   // 投稿取得
   const fetchSpots = async () => {
     try {
-      const querySnapshot = await getDocs(
-        collection(db, 'spots')
-      );
+      const q = query(collection(db, 'spots'), orderBy('createdAt', 'asc'));
+      const querySnapshot = await getDocs(q);
 
       const tempSpots: any[] = [];
 
