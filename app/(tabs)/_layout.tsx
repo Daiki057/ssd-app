@@ -1,5 +1,7 @@
 import { Tabs } from 'expo-router';
 
+// app/(tabs) 配下の画面を下部タブとしてまとめるレイアウトです。
+// name はファイル名と対応し、title はタブやヘッダーに表示される名前です。
 export default function TabLayout() {
   return (
     <Tabs>

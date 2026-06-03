@@ -1,6 +1,6 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * アプリ全体で使う色とフォントの定義です。
+ * ライト / ダークの値をここに集めることで、画面ごとの色指定を減らせます。
  */
 
 import { Platform } from 'react-native';

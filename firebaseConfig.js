@@ -1,12 +1,10 @@
-// Import the functions you need from the SDKs you need
+// Firebase アプリ本体と、アプリ内で使う Firestore / Storage を読み込みます。
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from 'firebase/storage';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase プロジェクトへ接続するための設定値です。
+// 他の画面は、この設定から作った db / storage を経由してデータを扱います。
 const firebaseConfig = {
   apiKey: "AIzaSyAjFqd_234vpz3hLZnP1Q9SSMaLeGWcx_o",
   authDomain: "ssd-project01-90c2e.firebaseapp.com",
@@ -17,7 +15,7 @@ const firebaseConfig = {
   measurementId: "G-PWLM7TQLXY"
 };
 
-// Initialize Firebase
+// Firebase を初期化し、Firestore と Storage を他ファイルから使えるようにします。
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const storage = getStorage(app);

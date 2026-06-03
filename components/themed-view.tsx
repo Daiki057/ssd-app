@@ -7,6 +7,8 @@ export type ThemedViewProps = ViewProps & {
   darkColor?: string;
 };
 
+// テーマに合わせて背景色を切り替える View です。
+// 画面やカードの土台に使うと、ライト / ダーク対応を共通化できます。
 export function ThemedView({ style, lightColor, darkColor, ...otherProps }: ThemedViewProps) {
   const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
 

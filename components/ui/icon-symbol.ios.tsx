@@ -1,6 +1,7 @@
 import { SymbolView, SymbolViewProps, SymbolWeight } from 'expo-symbols';
 import { StyleProp, ViewStyle } from 'react-native';
 
+// iOS では expo-symbols の SymbolView を使い、Apple 標準の SF Symbols を表示します。
 export function IconSymbol({
   name,
   size = 24,

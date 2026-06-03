@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   View,
@@ -16,6 +16,8 @@ import {
 
 import { db } from '../../firebaseConfig';
 
+// 投稿時に選べるスポットの特徴タグです。
+// Firestore には選択されたタグだけを配列として保存します。
 const TAG_OPTIONS = [
   '安い',
   'WiFi',
@@ -27,17 +29,19 @@ const TAG_OPTIONS = [
   '一人向け',
 ];
 
+// 学内外のおすすめスポットを投稿・一覧表示する画面です。
 export default function SpotScreen() {
+  // 入力フォームの値を管理します。
   const [shopName, setShopName] = useState('');
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(5);
 
+  // 選択中のタグと、Firestore から取得した投稿一覧を管理します。
   const [selectedTags, setSelectedTags] =
     useState<string[]>([]);
-
   const [spots, setSpots] = useState<any[]>([]);
 
-  // タグ選択
+  // タグを押すたびに、選択済みなら外し、未選択なら追加します。
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(
@@ -48,7 +52,7 @@ export default function SpotScreen() {
     }
   };
 
-  // 投稿取得
+  // Firestore の spots コレクションから投稿を取得して画面に反映します。
   const fetchSpots = async () => {
     try {
       const querySnapshot = await getDocs(
@@ -70,10 +74,10 @@ export default function SpotScreen() {
     }
   };
 
-  // 投稿保存
+  // 入力内容を Firestore に保存し、保存後にフォームと一覧を更新します。
   const saveSpot = async () => {
     if (!shopName || !comment) {
-      alert('入力してください');
+      alert('店名とコメントを入力してください');
       return;
     }
 
@@ -86,7 +90,7 @@ export default function SpotScreen() {
         createdAt: new Date(),
       });
 
-      alert('投稿成功！');
+      alert('投稿しました');
 
       setShopName('');
       setComment('');
@@ -99,6 +103,7 @@ export default function SpotScreen() {
     }
   };
 
+  // 画面を開いた直後に、既存の投稿を一度読み込みます。
   useEffect(() => {
     fetchSpots();
   }, []);
@@ -120,10 +125,10 @@ export default function SpotScreen() {
             marginBottom: 30,
           }}
         >
-          スポット共有
+          スポット投稿
         </Text>
 
-        {/* 店名 */}
+        {/* 店名入力欄 */}
         <TextInput
           placeholder="店名"
           value={shopName}
@@ -136,7 +141,7 @@ export default function SpotScreen() {
           }}
         />
 
-        {/* コメント */}
+        {/* コメント入力欄 */}
         <TextInput
           placeholder="コメント"
           value={comment}
@@ -151,7 +156,7 @@ export default function SpotScreen() {
           }}
         />
 
-        {/* 星評価 */}
+        {/* 評価を 1 から 5 の星で選ぶエリア */}
         <View
           style={{
             flexDirection: 'row',
@@ -175,7 +180,7 @@ export default function SpotScreen() {
           ))}
         </View>
 
-        {/* タグ選択 */}
+        {/* タグ選択エリア */}
         <Text
           style={{
             fontSize: 18,
@@ -250,7 +255,7 @@ export default function SpotScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* 投稿一覧 */}
+        {/* Firestore から取得した投稿一覧 */}
         {spots.map((spot) => (
           <View
             key={spot.id}

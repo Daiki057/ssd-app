@@ -15,11 +15,13 @@ export function ThemedText({
   type = 'default',
   ...rest
 }: ThemedTextProps) {
+  // ライト / ダークテーマに合わせた文字色を自動で選びます。
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
 
   return (
     <Text
       style={[
+        // type で文字の役割を選び、必要なら style で個別調整できます。
         { color },
         type === 'default' ? styles.default : undefined,
         type === 'title' ? styles.title : undefined,

@@ -1,5 +1,7 @@
 import Animated from 'react-native-reanimated';
 
+// 短いアニメーション付きの手振りアイコンです。
+// 初期サンプル画面など、軽いアクセントを入れたい場所で使います。
 export function HelloWave() {
   return (
     <Animated.Text
