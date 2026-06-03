@@ -12,7 +12,7 @@ export default function HomeScreen() {
         alignItems: 'center',
       }}
     >
-      <Text style={{ fontSize: 30 }}>SSD Campus</Text>
+      <Text style={{ fontSize: 30 }}>ホーム画面(友達情報の表示)</Text>
     </View>
   );
 }
