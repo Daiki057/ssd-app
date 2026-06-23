@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 
 import {
@@ -44,7 +45,15 @@ export default function LoginScreen() {
 
       Alert.alert(
         '登録成功',
-        userCredential.user.email ?? 'メール取得失敗'
+        userCredential.user.email ?? 'メール取得失敗',
+        [
+          {
+            text: "OK",
+            onPress: () => {
+        router.replace("/(tabs)");
+            }
+          }
+        ]
       );
 
 

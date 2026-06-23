@@ -1,37 +1,28 @@
-import { Tabs } from 'expo-router';
+import { Stack } from "expo-router";
 
-// app/(tabs) 配下の画面を下部タブとしてまとめるレイアウトです。
-// name はファイル名と対応し、title はタブやヘッダーに表示される名前です。
-export default function TabLayout() {
+
+export default function Layout(){
+
   return (
-    <Tabs>
-      <Tabs.Screen
-        name="index"
+
+    <Stack>
+
+      <Stack.Screen
+        name="login"
         options={{
-          title: 'ホーム',
+          headerShown:false
         }}
       />
 
-      <Tabs.Screen
-        name="spot"
+      <Stack.Screen
+        name="(tabs)"
         options={{
-          title: 'スポット',
+          headerShown:false
         }}
       />
 
-      <Tabs.Screen
-        name="baito"
-        options={{
-          title: 'バイト',
-        }}
-      />
+    </Stack>
 
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'プロフィール',
-        }}
-      />
-    </Tabs>
   );
+
 }
