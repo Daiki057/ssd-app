@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from 'firebase/storage';
+import { getAuth } from 'firebase/auth';
 
 // Firebase プロジェクトへ接続するための設定値です。
 // 他の画面は、この設定から作った db / storage を経由してデータを扱います。
@@ -19,3 +20,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const auth = getAuth(app);
