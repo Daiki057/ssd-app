@@ -1,8 +1,13 @@
 // Firebase アプリ本体と、アプリ内で使う Firestore / Storage を読み込みます。
 import { initializeApp } from "firebase/app";
+import {
+  getReactNativePersistence,
+  initializeAuth
+} from 'firebase/auth';
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from 'firebase/storage';
-import { getAuth } from 'firebase/auth';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Firebase プロジェクトへ接続するための設定値です。
 // 他の画面は、この設定から作った db / storage を経由してデータを扱います。
@@ -20,4 +25,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export const auth = getAuth(app);
+export const auth = initializeAuth(
+  app,
+  {
+    persistence:
+      getReactNativePersistence(
+        AsyncStorage
+      )
+  }
+)

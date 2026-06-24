@@ -1,5 +1,4 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState } from "react";
 
 import {
   View,
@@ -7,60 +6,45 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-} from 'react-native';
+} from "react-native";
 
 import {
-  createUserWithEmailAndPassword,
-} from 'firebase/auth';
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 
-import { auth } from '../firebaseConfig';
+import {
+  auth
+} from "../firebaseConfig";
 
-
-export default function LoginScreen() {
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-
-  const register = async () => {
-
-    if (!email || !password) {
-      Alert.alert(
-        '入力不足',
-        'メールとパスワードを入力してください'
-      );
-      return;
-    }
+import {
+  router
+} from "expo-router";
 
 
-    try {
+export default function Login(){
 
-      const userCredential =
-        await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+  const [email,setEmail] = useState("");
+  const [password,setPassword] = useState("");
 
 
-      Alert.alert(
-        '登録成功',
-        userCredential.user.email ?? 'メール取得失敗',
-        [
-          {
-            text: "OK",
-            onPress: () => {
-        router.replace("/(tabs)");
-            }
-          }
-        ]
+  const login = async()=>{
+
+    try{
+
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
 
 
-    } catch(error:any){
+      router.replace("/(tabs)");
+
+
+    }catch(error:any){
 
       Alert.alert(
-        '登録失敗',
+        "ログイン失敗",
         error.message
       );
 
@@ -69,27 +53,25 @@ export default function LoginScreen() {
   };
 
 
-  return (
+  return(
 
     <View
       style={{
         flex:1,
-        justifyContent:'center',
-        padding:20,
+        justifyContent:"center",
+        padding:20
       }}
     >
-
 
       <Text
         style={{
           fontSize:30,
-          fontWeight:'bold',
-          marginBottom:30,
+          fontWeight:"bold",
+          marginBottom:30
         }}
       >
         SSD Campus
       </Text>
-
 
 
       <TextInput
@@ -101,10 +83,9 @@ export default function LoginScreen() {
           borderWidth:1,
           padding:15,
           marginBottom:15,
-          borderRadius:10,
+          borderRadius:10
         }}
       />
-
 
 
       <TextInput
@@ -116,34 +97,47 @@ export default function LoginScreen() {
           borderWidth:1,
           padding:15,
           marginBottom:20,
-          borderRadius:10,
+          borderRadius:10
         }}
       />
 
 
-
       <TouchableOpacity
-        onPress={register}
+        onPress={login}
         style={{
-          backgroundColor:'#4A90E2',
+          backgroundColor:"#4A90E2",
           padding:15,
-          borderRadius:10,
+          borderRadius:10
         }}
       >
 
         <Text
           style={{
-            color:'white',
-            textAlign:'center',
-            fontWeight:'bold',
+            color:"white",
+            textAlign:"center"
           }}
         >
-          新規登録
+          ログイン
         </Text>
+
 
       </TouchableOpacity>
 
-
+      <TouchableOpacity
+      onPress={()=>{
+        router.push("/register")
+        }}
+      >
+          <Text
+          style={{
+            textAlign:"center",
+            marginTop:20
+            }}
+          >
+            アカウントを作成する
+            </Text>
+            
+      </TouchableOpacity>
     </View>
 
   );
