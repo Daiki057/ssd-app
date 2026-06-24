@@ -10,5 +10,15 @@
       "approve": true,
       "matchCommandLine": true
     }
+  },
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.(tsx|ts|js|jsx)$",
+        "cmd": "node ./scripts/auto-comment.js --once"
+      }
+    ]
   }
 }
+
+

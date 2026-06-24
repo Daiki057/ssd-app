@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "auto-comment:once",
+      "type": "shell",
+      "command": "node ./scripts/auto-comment.js --once",
+      "problemMatcher": [],
+      "group": {
+        "kind": "none",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "auto-comment:watch",
+      "type": "shell",
+      "command": "node ./scripts/auto-comment.js",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": "build"
+    }
+  ]
+}
