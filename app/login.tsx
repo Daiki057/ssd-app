@@ -1,13 +1,17 @@
+// ログイン画面です。
+// メールアドレスとパスワードを受け取り、
+// Firebase Auth でサインインします。
 import { useState } from "react";
 
 import {
-  View,
+  Alert,
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
+  View,
 } from "react-native";
 
+// Firebase の認証機能を使って、メールアドレスとパスワードでのログインを行います。
 import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
@@ -20,13 +24,15 @@ import {
   router
 } from "expo-router";
 
-
+// ログイン画面です。ユーザーの入力を受け取り、Firebase 認証を実行します。
 export default function Login(){
 
+  // 入力フォームの状態を保持します。
   const [email,setEmail] = useState("");
   const [password,setPassword] = useState("");
 
-
+  // ユーザがログインボタンを押したときに呼ばれる関数です。
+  // Firebase に email / password でサインインを要求します。
   const login = async()=>{
 
     try{

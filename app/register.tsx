@@ -1,29 +1,35 @@
+// 新規登録画面です。
+// メールアドレスとパスワードを受け取り、
+// Firebase Auth で新しいユーザーを作成します。
 import { router } from 'expo-router';
 import { useState } from 'react';
 
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
+    Alert,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
+// Firebase の認証機能を使って、新しいユーザーを登録します。
 import {
-  createUserWithEmailAndPassword,
+    createUserWithEmailAndPassword,
 } from 'firebase/auth';
 
 import { auth } from '../firebaseConfig';
 
-
+// 新規登録画面です。メールとパスワードを入力してアカウントを作成します。
 export default function LoginScreen() {
 
+  // 登録用のフォームの状態を保持します。
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-
+  // 新規登録処理です。Firebase Auth で新しいユーザーを作成します。
   const register = async () => {
 
+    // メールとパスワードが入力されていない場合は登録を止め、アラートを表示します。
     if (!email || !password) {
       Alert.alert(
         '入力不足',
@@ -35,13 +41,13 @@ export default function LoginScreen() {
 
     try {
 
+      // Firebase にユーザーを登録し、登録成功後はホーム画面へ移動します。
       const userCredential =
         await createUserWithEmailAndPassword(
           auth,
           email,
           password
         );
-
 
       Alert.alert(
         '登録成功',

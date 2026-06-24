@@ -1,20 +1,24 @@
+// スポット投稿画面です。ユーザーが店名・コメント・評価を入力して
+// Firestore に投稿を保存し、既存投稿を一覧表示できます。
 import { useEffect, useState } from 'react';
 
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 import {
-  collection,
-  addDoc,
-  getDocs,
+    addDoc,
+    collection,
+    getDocs,
 } from 'firebase/firestore';
 
 import { db } from '../../firebaseConfig';
+
+// Firestore の `spots` コレクションを使って投稿を取得・保存します。
 
 // 投稿時に選べるスポットの特徴タグです。
 // Firestore には選択されたタグだけを配列として保存します。

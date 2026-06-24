@@ -1,3 +1,5 @@
+// Firebase 認証状態をアプリ全体で共有するコンポーネントです。
+// `useAuth()` から現在のユーザー情報と読み込み状態を取得できます。
 import {
     createContext,
     useContext,
@@ -12,6 +14,7 @@ import {
 
 import { auth } from "../../firebaseConfig";
 
+// Firebase の認証状態が変化したときに呼ばれるリスナーを使います。
 
 const AuthContext = createContext<{
   user: User | null;
@@ -21,6 +24,8 @@ const AuthContext = createContext<{
   loading:true
 });
 
+// `AuthProvider` はアプリ全体に認証情報を共有するためのコンポーネントです。
+// 子コンポーネントから `useAuth()` でログイン済みユーザーや読み込み状態を取得できます。
 
 export function AuthProvider({
   children
@@ -37,6 +42,8 @@ export function AuthProvider({
 
   useEffect(()=>{
 
+    // Firebase の auth で認証状態が変えられるたびに呼ばれる処理です。
+    // 画面を開いたときも一度実行され、現在のログイン状態を user にセットします。
     const unsubscribe =
       onAuthStateChanged(
         auth,
@@ -49,7 +56,7 @@ export function AuthProvider({
         }
       );
 
-
+    // コンポーネントが消えるときに、監視を解除します。
     return unsubscribe;
 
   },[]);

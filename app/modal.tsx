@@ -1,11 +1,11 @@
+// このファイルはモーダル表示用のサンプル画面です。
+// `Link` の `dismissTo` でモーダルを閉じつつ、トップ画面へ戻ります。
 import { Link } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
-// expo-router のモーダル表示用画面です。
-// dismissTo を使って、モーダルを閉じながらホーム画面へ戻します。
 export default function ModalScreen() {
   return (
     <ThemedView style={styles.container}>

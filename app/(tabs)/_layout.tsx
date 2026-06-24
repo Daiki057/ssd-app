@@ -1,5 +1,9 @@
+// ログイン後のタブナビゲーションを定義する画面です。
+// `name` に対応するタブ画面を `app/(tabs)` から読み込みます。
 import { Tabs } from "expo-router";
 
+// ログイン後に表示されるタブ画面のレイアウトです。
+// ここでタブの数やタイトルを定義します。
 export default function TabLayout() {
   return (
     <Tabs>
