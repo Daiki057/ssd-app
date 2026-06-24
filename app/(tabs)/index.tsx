@@ -1,253 +1,301 @@
-// ホーム画面のコンポーネントです。ユーザーの基本プロフィールと
-// お気に入りの友達一覧をスクロールで表示します。
+// タブ画面のホームです。
+// プロフィールとお気に入りの友達一覧を表示します。
 import {
   Image,
   ScrollView,
   StyleSheet,
   Text,
-  View
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-// この配列は画面に表示する友達のサンプルデータです。
-// 実際のアプリでは、API や Firestore から取得したデータに差し替える想定です。
+import { router } from "expo-router";
+
 const friends = [
   {
-    name:"友達A",
-    date:"4/2",
-    image:
-    "https://i.pravatar.cc/100?img=12"
+    name: "友達A",
+    date: "4/2",
+    image: "https://i.pravatar.cc/100?img=12",
   },
   {
-    name:"友達B",
-    date:"11/22",
-    image:
-    "https://i.pravatar.cc/100?img=20"
+    name: "友達B",
+    date: "11/22",
+    image: "https://i.pravatar.cc/100?img=20",
   },
   {
-    name:"友達C",
-    date:"7/12",
-    image:
-    "https://i.pravatar.cc/100?img=32"
+    name: "友達C",
+    date: "7/12",
+    image: "https://i.pravatar.cc/100?img=32",
   },
-  {
-    name:"友達D",
-    date:"1/1",
-    image:
-    "https://i.pravatar.cc/100?img=45"
-  }
 ];
 
-
-export default function Home(){
-
-  // `Home` コンポーネントは 1 つの画面を表します。
-  // ここではユーザーのプロフィールと友達リストを表示しています。
-  return(
-
-    <ScrollView
-      style={styles.container}
-    >
-
-      <View
-        style={styles.profile}
-      >
-
-
-        <Text style={styles.mbti}>
-          INFP
-        </Text>
-
-
-        <Text style={styles.info}>
-          誕生日 2/23
-        </Text>
-
-
-        <Text style={styles.info}>
-          企業情報学部
-        </Text>
-
-
-        <Text style={styles.info}>
-          サークル
-        </Text>
-
-        <Text style={styles.sub}>
-          ・コトポート etc...
-        </Text>
-
-
-
-        <Text style={styles.info}>
-          登録講義
-        </Text>
-
-        <Text style={styles.sub}>
-          ・心理学 etc...
-        </Text>
-
-
-      </View>
-
-
-
-      <View
-        style={styles.follow}
-      >
-
-        <Text>
-          フォロー{"\n"}5人
-        </Text>
-
-
-        <Text>
-          フォロワー{"\n"}5人
-        </Text>
-
-
-      </View>
-
-
-
-
-      <Text
-        style={styles.name}
-      >
-        黒萩大樹
-      </Text>
-
-
-
-
-      <Text
-        style={styles.favoriteTitle}
-      >
-        お気に入り▼
-      </Text>
-
-
-
-
-      {
-        friends.map((friend,index)=>(
-
-
-          <View
-            key={index}
-            style={styles.friend}
-          >
-
-
-            <Image
-              source={{
-                uri:friend.image
+export default function Home() {
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
+      {/* 上部: プロフィール (1/3) */}
+      <View style={styles.profileContainer}>
+        {/* 縦比 9:1 => 上段(row) が 9, 下段(name) が 1 */}
+        <View style={styles.profileContent}>
+          {/* 左: 大きなアイコン */}
+          <View style={styles.leftColumn}>
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/qr");
               }}
-              style={styles.avatar}
-            />
-
-
-            <Text
-              style={styles.friendName}
             >
-              {friend.name}
-            </Text>
-
-
-            <Text>
-              {friend.date}
-            </Text>
-
-
+              <Image
+                source={{ uri: "https://i.pravatar.cc/300?img=5" }}
+                style={styles.largeIcon}
+              />
+            </TouchableOpacity>
           </View>
 
+          {/* 右: MBTI, 誕生日, 学部, サークル, 登録講義 */}
+          <View style={styles.rightColumn}>
+            <Text style={styles.mbti}>INFP</Text>
+            <Text style={styles.info}>誕生日 2/23</Text>
+            <Text style={styles.info}>企業情報学部</Text>
+            <Text style={styles.info}>サークル: コトポート</Text>
+            <Text style={styles.info}>登録講義: 心理学</Text>
+          </View>
+        </View>
 
-        ))
-      }
+        {/* 下部: 名前と学籍番号 (1 部分) */}
+        <View style={styles.nameBlockLarge}>
+          <Text style={styles.name}>黒萩大樹</Text>
+          <Text style={styles.studentId}>学籍番号: J25032</Text>
+        </View>
+      </View>
 
+      {/* 下部: 友達一覧 (2/3) */}
+      <View style={styles.friendsContainer}>
+        <View style={styles.friendsHeaderRow}>
+          <Text style={styles.favorite}>友達一覧▼</Text>
+          <Text style={styles.friendCountInline}>5人</Text>
+        </View>
 
+        {friends.map((friend, index) => (
+          <View key={index} style={styles.friend}>
+            <Image source={{ uri: friend.image }} style={styles.avatar} />
+
+            <Text style={styles.friendName}>{friend.name}</Text>
+
+            <Text>{friend.date}</Text>
+          </View>
+        ))}
+      </View>
     </ScrollView>
-
   );
-
 }
 
-
-
-
 const styles = StyleSheet.create({
-
-  container:{
-    flex:1,
-    backgroundColor:"#ffd6dc",
+  container: {
+    flex: 1,
+    backgroundColor: "#ffd6dc",
   },
 
-
-  profile:{
-    alignItems:"flex-end",
-    paddingTop:50,
-    paddingRight:40
+  profile: {
+    alignItems: "flex-end",
+    paddingTop: 40,
+    paddingRight: 40,
   },
 
-
-  mbti:{
-    fontSize:26,
-    marginBottom:15
+  // 中央揃えのヘッダ（アイコン＋名前）
+  profileHeader: {
+    alignSelf: "center",
+    alignItems: "center",
+    marginBottom: 10,
   },
 
-
-  info:{
-    fontSize:22,
-    marginTop:10
+  // 左アイコン + 右情報 の行レイアウト
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingHorizontal: 20,
   },
 
-
-  sub:{
-    fontSize:18
+  // 右側の情報は右寄せ
+  profileInfo: {
+    alignItems: "flex-end",
   },
 
-
-  follow:{
-    flexDirection:"row",
-    justifyContent:"space-around",
-    marginTop:30
+  // 名前と学籍番号のブロック（中央揃え）
+  nameBlock: {
+    alignItems: "center",
+    marginTop: 10,
   },
 
-
-  name:{
-    fontSize:26,
-    marginLeft:70,
-    marginTop:10,
-    fontWeight:"bold"
+  studentId: {
+    fontSize: 16,
+    color: "#444",
+    marginTop: 4,
   },
 
-
-  favoriteTitle:{
-    fontSize:22,
-    marginLeft:30,
-    marginTop:20
+  /* New layout styles for top1/3 profile, bottom2/3 friends */
+  profileContainer: {
+    flex: 1, // top 1 of total 3 (paired with friendsContainer flex:2)
   },
 
-
-  friend:{
-    flexDirection:"row",
-    alignItems:"center",
-    marginLeft:50,
-    marginTop:25
+  profileContent: {
+    flex: 9, // 9 parts
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
   },
 
-
-  avatar:{
-    width:60,
-    height:60,
-    borderRadius:30
+  leftColumn: {
+    flex: 1,
+    alignItems: "flex-start",
+    justifyContent: "center",
+    paddingLeft: 8,
   },
 
+  rightColumn: {
+    flex: 1,
+    alignItems: "flex-end",
+    justifyContent: "center",
+    paddingRight: 12,
+  },
 
-  friendName:{
-    marginLeft:40,
-    fontSize:18,
-    width:100
-  }
+  largeIcon: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+  },
 
+  nameBlockLarge: {
+    flex: 1, // the bottom 1 part of the 9:1 split
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
 
+  friendsContainer: {
+    flex: 2,
+    backgroundColor: "#ffd6dc",
+    paddingHorizontal: 8,
+  },
+
+  friendsHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    marginTop: 6,
+    marginBottom: 6,
+  },
+
+  friendCountInline: {
+    fontSize: 18,
+    color: "#333",
+  },
+
+  /*
+    レイアウト調整ガイド (編集しやすいように例を残しています)
+
+    変更手順:
+    1. このファイル `app/(tabs)/index.tsx` を開く
+    2. 下の `styles` オブジェクト内の該当プロパティを上書き
+    3. 保存すると Expo のホットリロードで反映されます
+
+    よくある調整例（`profileHeader` / `profile` / `myIcon` / `name` / `mbti` を置き換えてください）:
+
+    // アイコンをもっと上に持っていく
+    profile: {
+      alignItems: 'flex-end',
+      paddingTop: 20, // 小さくする
+      paddingRight: 40,
+    }
+
+    // アイコンを左寄せにして名前も左揃え
+    profile: {
+      alignItems: 'flex-start',
+      paddingTop: 40,
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
+    profileHeader: {
+      alignSelf: 'flex-start',
+      alignItems: 'flex-start',
+    }
+
+    // アイコンを大きく中央に（デフォルトより大きく）
+    profileHeader: {
+      alignSelf: 'center',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    myIcon: {
+      width: 110,
+      height: 110,
+      borderRadius: 55,
+      marginBottom: 6,
+    }
+
+    // 名前サイズを下げる
+    name: { fontSize: 20 },
+    mbti: { fontSize: 16, marginTop: 4 },
+
+    注意: 上に示したのは例です。目的の見た目に合わせて数値を増減してください。
+  */
+
+  myIcon: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    marginBottom: 8,
+  },
+
+  name: {
+    fontSize: 26,
+    fontWeight: "bold",
+  },
+
+  mbti: {
+    fontSize: 25,
+    marginTop: 6,
+  },
+
+  info: {
+    fontSize: 20,
+    marginTop: 10,
+  },
+
+  sub: {
+    fontSize: 17,
+  },
+
+  friendCount: {
+    marginTop: 20,
+    marginLeft: 60,
+  },
+
+  favorite: {
+    fontSize: 22,
+    marginLeft: 30,
+    marginTop: 25,
+  },
+
+  friend: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 50,
+    marginTop: 20,
+  },
+
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
+
+  friendName: {
+    marginLeft: 30,
+    width: 100,
+    fontSize: 18,
+  },
 });
