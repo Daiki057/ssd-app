@@ -1,9 +1,10 @@
 // qrScanner.tsx のコード説明: このファイルは React コンポーネントを定義し、アプリの表示と操作を担当します。
 import {
-  View,
-  Text,
+  Alert,
+  Button,
   StyleSheet,
-  Button
+  Text,
+  View
 } from "react-native";
 
 
@@ -19,6 +20,13 @@ export default function QRScanner(){
     permission,
     requestPermission
   ] = useCameraPermissions();
+
+  const addFriend = (data:string) => {
+    Alert.alert(
+      "友達追加",
+      `QR を読み取りました: ${data}`
+    );
+  };
 
 
 
@@ -67,10 +75,7 @@ export default function QRScanner(){
         facing="back"
         onBarcodeScanned={({data})=>{
 
-          console.log(
-            "取得uid:",
-            data
-          );
+          addFriend(data)
 
         }}
         barcodeScannerSettings={{
