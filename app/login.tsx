@@ -76,7 +76,7 @@ export default function Login(){
           marginBottom:30
         }}
       >
-        SSD Campus
+        SSD
       </Text>
 
 
