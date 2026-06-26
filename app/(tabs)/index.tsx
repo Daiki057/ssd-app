@@ -10,27 +10,54 @@ import {
 } from "react-native";
 
 import { router } from "expo-router";
-
-const friends = [
-  {
-    name: "友達A",
-    date: "4/2",
-    image: "https://i.pravatar.cc/100?img=12",
-  },
-  {
-    name: "友達B",
-    date: "11/22",
-    image: "https://i.pravatar.cc/100?img=20",
-  },
-  {
-    name: "友達C",
-    date: "7/12",
-    image: "https://i.pravatar.cc/100?img=32",
-  },
-];
+import { use } from "react";
+import { useEffect, useState } from "react";
+import { doc, getDoc } from "firebase/firestore"; 
+import { auth, db } from "../../firebaseConfig";
 
 export default function Home() {
-  return (
+
+  const [user,setUser]=useState<any>(null);
+  
+  useEffect(()=>{
+    const uid=auth.currentUser?useId;
+    
+    if(!uid)return;
+
+    const snapshot=
+    await setDoc(
+      doc(
+        db,
+        "users",
+        uid
+      )
+    );
+
+    if(snapshot.exusts()){
+
+      setUser(
+        snapshot.data()
+      );
+    }
+  };
+  loadUser();
+},[]);
+
+const [user,setUser]=useState<any>(null);
+
+if(!user){
+  return(
+    <View>
+    
+    <Text>
+    読み込み中
+    </Text>
+    
+    </View>
+  )
+}
+
+}
     <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
       {/* 上部: プロフィール (1/3) */}
       <View style={styles.profileContainer}>
@@ -52,9 +79,9 @@ export default function Home() {
 
           {/* 右: MBTI, 誕生日, 学部, サークル, 登録講義 */}
           <View style={styles.rightColumn}>
-            <Text style={styles.mbti}>INFP</Text>
-            <Text style={styles.info}>誕生日 2/23</Text>
-            <Text style={styles.info}>企業情報学部</Text>
+            <Text style={styles.mbti}>{user.mbti}</Text>
+            <Text style={styles.info}>{user.birthData}</Text>
+            <Text style={styles.info}>{user.faculty}</Text>
             <Text style={styles.info}>サークル: コトポート</Text>
             <Text style={styles.info}>登録講義: 心理学</Text>
           </View>
@@ -62,7 +89,7 @@ export default function Home() {
 
         {/* 下部: 名前と学籍番号 (1 部分) */}
         <View style={styles.nameBlockLarge}>
-          <Text style={styles.name}>黒萩大樹</Text>
+          <Text style={styles.name}>{user.name}</Text>
           <Text style={styles.studentId}>学籍番号: J25032</Text>
         </View>
       </View>
@@ -71,18 +98,9 @@ export default function Home() {
       <View style={styles.friendsContainer}>
         <View style={styles.friendsHeaderRow}>
           <Text style={styles.favorite}>友達一覧▼</Text>
-          <Text style={styles.friendCountInline}>5人</Text>
+          <Text style={styles.friendCountInline}>{user.friends.length}人</Text>
         </View>
 
-        {friends.map((friend, index) => (
-          <View key={index} style={styles.friend}>
-            <Image source={{ uri: friend.image }} style={styles.avatar} />
-
-            <Text style={styles.friendName}>{friend.name}</Text>
-
-            <Text>{friend.date}</Text>
-          </View>
-        ))}
       </View>
     </ScrollView>
   );
