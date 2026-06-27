@@ -9,7 +9,9 @@ import {
   View,
 } from "react-native";
 
-import { router } from "expo-router";
+import {
+  router
+} from "expo-router";
 
 import {
   useEffect,
@@ -18,6 +20,7 @@ import {
 
 import {
   doc,
+  onSnapshot,
   getDoc
 } from "firebase/firestore";
 
@@ -27,304 +30,493 @@ import {
 } from "../../firebaseConfig";
 
 
-export default function Home() {
 
 
-  const [user,setUser] = useState<any>(null);
 
+const facultyMap:any = {
 
+  "企業情報学部":"J",
 
-  useEffect(()=>{
+  "環境ツーリズム学部":"T",
 
+  "社会福祉学部":"F",
 
-    const loadUser = async()=>{
+  "地域経営学部":"C",
 
+  "共創情報学部":"K"
 
-      const uid = auth.currentUser?.uid;
+};
 
 
-      if(!uid)
-        return;
 
 
 
-      const snapshot =
-      await getDoc(
+export default function Home(){
 
-        doc(
-          db,
-          "users",
-          uid
-        )
 
-      );
 
+const [profile,setProfile]
+=
+useState<any>(null);
 
 
-      if(snapshot.exists()){
 
-        setUser(
-          snapshot.data()
-        );
+const [friends,setFriends]
+=
+useState<any[]>([]);
 
-      }
 
 
-    };
 
 
-    loadUser();
+useEffect(()=>{
 
 
-  },[]);
+const uid =
+auth.currentUser?.uid;
 
 
 
+if(!uid)
+return;
 
-  if(!user){
 
 
-    return(
 
-      <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
 
-        <Text>
-          読み込み中...
-        </Text>
+const userRef =
+doc(
+db,
+"users",
+uid
+);
 
-      </View>
 
-    );
 
-  }
 
+// 自分プロフィール監視
 
+const unsubscribe =
 
+onSnapshot(
 
+userRef,
 
-  return (
+async(snapshot)=>{
 
 
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{flexGrow:1}}
-    >
+if(!snapshot.exists())
+return;
 
 
 
-      {/* プロフィール */}
+const data =
+snapshot.data();
 
-      <View style={styles.profileContainer}>
 
 
-        <View style={styles.profileContent}>
+setProfile(data);
 
 
-          <View style={styles.leftColumn}>
 
 
-            <TouchableOpacity
 
-              onPress={()=>{
+const friendIds =
+data.friends ?? [];
 
-                router.push("/qr");
 
-              }}
 
-            >
+const friendData:any[] = [];
 
 
-              <Image
 
-                source={{
-                  uri:
-                  "https://i.pravatar.cc/300?img=5"
-                }}
 
-                style={styles.largeIcon}
+for(
+const id of friendIds
+){
 
-              />
 
 
-            </TouchableOpacity>
+const friendSnap =
 
+await getDoc(
 
-          </View>
+doc(
+db,
+"users",
+id
+)
 
+);
 
 
 
+if(friendSnap.exists()){
 
-          <View style={styles.rightColumn}>
 
+friendData.push({
 
-            <Text style={styles.mbti}>
+uid:id,
 
-              {user.mbti}
+...friendSnap.data()
 
-            </Text>
 
+});
 
-
-            <Text style={styles.info}>
-
-              誕生日 {user.birthDate}
-
-            </Text>
-
-
-
-            <Text style={styles.info}>
-
-              {user.faculty}
-
-            </Text>
-
-
-
-            <Text style={styles.info}>
-
-              サークル: {user.circle}
-
-            </Text>
-
-
-
-            <Text style={styles.info}>
-
-              登録講義: {user.courses}
-
-            </Text>
-
-
-          </View>
-
-
-        </View>
-
-
-
-
-
-        <View style={styles.nameBlockLarge}>
-
-
-          <Text style={styles.name}>
-
-            {user.name}
-
-          </Text>
-
-
-
-          <Text style={styles.studentId}>
-
-            {user.studentId}
-
-          </Text>
-
-
-        </View>
-
-
-      </View>
-
-
-
-
-
-
-
-      {/* 友達 */}
-
-      <View style={styles.friendsContainer}>
-
-
-        <View style={styles.friendsHeaderRow}>
-
-
-          <Text style={styles.favorite}>
-
-            友達一覧▼
-
-          </Text>
-
-
-
-          <Text style={styles.friendCountInline}>
-
-            {user.friends?.length ?? 0}人
-
-          </Text>
-
-
-
-        </View>
-
-
-
-
-
-
-        {
-
-          user.friends?.map(
-
-            (friendId:string,index:number)=>(
-
-
-              <View
-
-                key={index}
-
-                style={styles.friend}
-
-              >
-
-
-                <Image
-
-                  source={{
-                    uri:
-                    "https://i.pravatar.cc/100?img=12"
-                  }}
-
-                  style={styles.avatar}
-
-                />
-
-
-
-                <Text style={styles.friendName}>
-
-                  友達ID
-
-                </Text>
-
-
-
-              </View>
-
-
-            )
-
-
-          )
-
-        }
-
-
-      </View>
-
-
-
-
-    </ScrollView>
-
-
-  );
 
 }
+
+
+
+}
+
+
+
+setFriends(friendData);
+
+
+
+}
+
+
+);
+
+
+
+
+
+return ()=>unsubscribe();
+
+
+
+},[]);
+
+
+
+
+
+
+
+
+
+if(!profile){
+
+
+return(
+
+<View style={styles.loading}>
+
+<Text>
+
+読み込み中...
+
+</Text>
+
+</View>
+
+);
+
+
+}
+
+
+
+
+
+
+
+return(
+
+
+<ScrollView
+
+style={styles.container}
+
+contentContainerStyle={{
+flexGrow:1
+}}
+
+>
+
+
+
+{/* プロフィール */}
+
+<View style={styles.profileContainer}>
+
+
+<View style={styles.profileContent}>
+
+
+
+<View style={styles.leftColumn}>
+
+
+<TouchableOpacity
+
+onPress={()=>{
+
+router.push("/qr");
+
+}}
+
+>
+
+
+<Image
+
+source={{
+
+uri:
+"https://i.pravatar.cc/300?img=5"
+
+}}
+
+style={styles.myIcon}
+
+/>
+
+
+</TouchableOpacity>
+
+
+
+</View>
+
+
+
+
+
+
+
+<View style={styles.rightColumn}>
+
+
+<Text style={styles.mbti}>
+
+{profile.mbti}
+
+</Text>
+
+
+
+<Text style={styles.info}>
+
+誕生日 {profile.birthDate}
+
+</Text>
+
+
+
+<Text style={styles.info}>
+
+{profile.faculty}
+
+</Text>
+
+
+
+<Text style={styles.info}>
+
+サークル:{profile.circle}
+
+</Text>
+
+
+
+<Text style={styles.info}>
+
+講義:{profile.courses}
+
+</Text>
+
+
+
+</View>
+
+
+
+</View>
+
+
+
+
+
+
+<View style={styles.nameArea}>
+
+
+<Text style={styles.name}>
+
+{profile.name}
+
+</Text>
+
+
+
+<Text style={styles.studentId}>
+
+{profile.studentId}
+
+</Text>
+
+
+
+</View>
+
+
+
+</View>
+
+
+
+
+
+
+
+
+{/* 友達一覧 */}
+
+<View style={styles.friendContainer}>
+
+
+<View style={styles.friendHeader}>
+
+
+<Text style={styles.friendTitle}>
+
+友達一覧▼
+
+</Text>
+
+
+
+<Text style={styles.friendCount}>
+
+{friends.length}人
+
+</Text>
+
+</View>
+
+
+
+
+
+{
+
+friends.map(
+
+(friend)=>{
+
+
+const course =
+
+friend.courses
+
+?.split(",")[0]
+
+??
+
+"講義未登録";
+
+
+
+return(
+
+
+<View
+
+key={friend.uid}
+
+style={styles.friendRow}
+
+>
+
+
+
+<Image
+
+source={{
+
+uri:
+
+"https://i.pravatar.cc/100?img=12"
+
+}}
+
+style={styles.friendIcon}
+
+/>
+
+
+
+
+
+<Text style={styles.friendName}>
+
+{friend.name}
+
+</Text>
+
+
+
+
+<Text style={styles.facultyBadge}>
+
+{facultyMap[friend.faculty]}
+
+</Text>
+
+
+
+
+
+<Text style={styles.course}>
+
+：{course}
+
+</Text>
+
+
+
+
+
+</View>
+
+
+);
+
+
+
+}
+
+
+)
+
+}
+
+
+
+
+
+</View>
+
+
+
+
+
+</ScrollView>
+
+
+);
+
+
+}
+
+
+
+
 
 
 
@@ -333,141 +525,256 @@ export default function Home() {
 const styles = StyleSheet.create({
 
 
+
 container:{
-  flex:1,
-  backgroundColor:"#ffd6dc",
+
+flex:1,
+
+backgroundColor:"#ffd6dc"
+
 },
 
 
 
+loading:{
+
+flex:1,
+
+justifyContent:"center",
+
+alignItems:"center"
+
+},
+
+
+
+
+
+
+// ===== プロフィール =====
+
+
+
 profileContainer:{
-  flex:1,
+
+flex:1,
+
 },
 
 
 
 profileContent:{
-  flex:9,
-  flexDirection:"row",
-  alignItems:"center",
-  justifyContent:"space-between",
-  paddingHorizontal:8,
+
+flex:9,
+
+flexDirection:"row",
+
+alignItems:"center",
+
+justifyContent:"space-between",
+
+paddingHorizontal:10,
+
 },
 
 
 
 leftColumn:{
-  flex:1,
-  alignItems:"flex-start",
-  justifyContent:"center",
-  paddingLeft:8,
+
+flex:1,
+
+alignItems:"flex-start",
+
 },
 
 
 
 rightColumn:{
-  flex:1,
-  alignItems:"flex-end",
-  justifyContent:"center",
-  paddingRight:12,
+
+flex:1,
+
+alignItems:"flex-end",
+
+paddingRight:15,
+
 },
 
 
 
-largeIcon:{
-  width:160,
-  height:160,
-  borderRadius:80,
-},
+myIcon:{
 
+width:160,
 
+height:160,
 
-nameBlockLarge:{
-  flex:1,
-  alignItems:"center",
-  justifyContent:"center",
-  flexDirection:"row",
-  gap:8,
-},
+borderRadius:80
 
-
-
-name:{
-  fontSize:26,
-  fontWeight:"bold",
-},
-
-
-
-studentId:{
-  fontSize:16,
-  color:"#444",
 },
 
 
 
 mbti:{
-  fontSize:25,
+
+fontSize:25,
+
 },
 
 
 
 info:{
-  fontSize:20,
-  marginTop:10,
+
+fontSize:18,
+
+marginTop:10,
+
 },
 
 
 
-friendsContainer:{
-  flex:2,
+nameArea:{
+
+alignItems:"center",
+
+flexDirection:"row",
+
+justifyContent:"center",
+
+gap:10
+
 },
 
 
 
-friendsHeaderRow:{
-  flexDirection:"row",
-  justifyContent:"space-between",
-  alignItems:"center",
+name:{
+
+fontSize:26,
+
+fontWeight:"bold"
+
 },
 
 
 
-favorite:{
-  fontSize:22,
-  marginLeft:30,
+studentId:{
+
+fontSize:16,
+
+color:"#555"
+
 },
 
 
 
-friendCountInline:{
-  fontSize:18,
-  marginRight:30,
+
+
+
+
+// ===== 友達一覧 =====
+
+
+
+friendContainer:{
+
+flex:2,
+
+paddingHorizontal:10
+
 },
 
 
 
-friend:{
-  flexDirection:"row",
-  alignItems:"center",
-  marginLeft:50,
-  marginTop:20,
+friendHeader:{
+
+flexDirection:"row",
+
+justifyContent:"space-between",
+
+alignItems:"center",
+
+marginBottom:15
+
 },
 
 
 
-avatar:{
-  width:60,
-  height:60,
-  borderRadius:30,
+friendTitle:{
+
+fontSize:22,
+
+marginLeft:20
+
+},
+
+
+
+friendCount:{
+
+fontSize:18,
+
+marginRight:20
+
+},
+
+
+
+
+
+friendRow:{
+
+flexDirection:"row",
+
+alignItems:"center",
+
+marginBottom:18,
+
+paddingHorizontal:20
+
+},
+
+
+
+friendIcon:{
+
+width:55,
+
+height:55,
+
+borderRadius:30
+
 },
 
 
 
 friendName:{
-  marginLeft:30,
-  fontSize:18,
+
+fontSize:18,
+
+marginLeft:20,
+
+width:100
+
 },
+
+
+
+facultyBadge:{
+
+fontSize:18,
+
+marginLeft:5
+
+},
+
+
+
+course:{
+
+fontSize:16,
+
+marginLeft:5
+
+},
+
 
 
 });
