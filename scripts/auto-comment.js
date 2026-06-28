@@ -81,6 +81,11 @@ function hasHeaderComment(content) {
   return false;
 }
 
+function removeExtraBlankLines(content) {
+  const normalized = content.replace(/\r?\n/g, '\n');
+  return normalized.replace(/\n{3,}/g, '\n\n');
+}
+
 function getHeaderComment(filePath) {
   const key = normalizeKey(filePath);
   if (fileDescriptions[key]) {
@@ -104,7 +109,9 @@ function annotateFile(filePath) {
   const comment = getHeaderComment(filePath);
   if (!comment) return;
 
-  const content = fs.readFileSync(filePath, 'utf8');
+  let content = fs.readFileSync(filePath, 'utf8');
+  content = removeExtraBlankLines(content);
+
   if (hasHeaderComment(content)) return;
 
   const output = `${comment}\n${content}`;

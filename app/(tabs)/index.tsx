@@ -38,7 +38,6 @@ import {
 
 const facultyMap:any = {
 
-
   "企業情報学部":"J",
 
   "環境ツーリズム学部":"T",
@@ -49,6 +48,25 @@ const facultyMap:any = {
 
   "共創情報学部":"K"
 
+};
+
+
+
+
+
+const avatarImages:any = {
+icon1:
+require("../../assets/icons/icon1.png"),
+icon2:
+require("../../assets/icons/icon2.png"),
+icon3:
+require("../../assets/icons/icon3.png"),
+icon4:
+require("../../assets/icons/icon4.png"),
+icon5:
+require("../../assets/icons/icon5.png"),
+icon6:
+require("../../assets/icons/icon6.png")
 };
 
 
@@ -84,7 +102,6 @@ const uid =
 auth.currentUser?.uid;
 
 
-
 if(!uid)
 return;
 
@@ -112,7 +129,6 @@ userRef,
 (snapshot)=>{
 
 
-
 if(!snapshot.exists())
 return;
 
@@ -135,7 +151,8 @@ data.friends ?? [];
 
 
 
-const unsubscribeFriends:any[] = [];
+
+const unsubscribeFriends:any[]=[];
 
 
 
@@ -148,7 +165,6 @@ friendIds.forEach(
 
 
 const friendRef =
-
 doc(
 db,
 "users",
@@ -165,22 +181,23 @@ onSnapshot(
 
 friendRef,
 
-(friendSnapshot)=>{
+(friendSnap)=>{
 
 
-if(!friendSnapshot.exists())
+if(!friendSnap.exists())
 return;
+
 
 
 
 const friendData = {
 
-
 uid:friendId,
 
-...friendSnapshot.data()
+...friendSnap.data()
 
 };
+
 
 
 
@@ -188,21 +205,15 @@ uid:friendId,
 setFriends(prev=>{
 
 
-const filtered =
-
-prev.filter(
-
-(friend)=>
-
-friend.uid !== friendId
-
-);
-
-
-
 return [
 
-...filtered,
+...prev.filter(
+
+(f)=>
+
+f.uid !== friendId
+
+),
 
 friendData
 
@@ -215,14 +226,14 @@ friendData
 
 }
 
-
-
 );
 
 
 
 unsubscribeFriends.push(
+
 unsubscribeFriend
+
 );
 
 
@@ -232,7 +243,6 @@ unsubscribeFriend
 
 
 );
-
 
 
 
@@ -255,7 +265,6 @@ unsubscribeFriends.forEach(
 }
 
 );
-
 
 
 
@@ -287,9 +296,7 @@ return(
 <View style={styles.loading}>
 
 <Text>
-
 読み込み中...
-
 </Text>
 
 </View>
@@ -298,7 +305,6 @@ return(
 
 
 }
-
 
 
 
@@ -324,7 +330,7 @@ flexGrow:1
 
 
 
-{/* ===== 自分プロフィール ===== */}
+{/* 自分プロフィール */}
 
 
 
@@ -350,26 +356,29 @@ router.push("/qr");
 
 <Image
 
+source={
 
-source={{
+avatarImages[profile.avatar]
 
-uri:
+??
 
-"https://i.pravatar.cc/300?img=5"
+avatarImages.icon1
 
-}}
-
+}
 
 style={styles.myIcon}
 
-
 />
+
 
 
 </TouchableOpacity>
 
 
+
 </View>
+
+
 
 
 
@@ -417,7 +426,6 @@ style={styles.myIcon}
 </Text>
 
 
-
 </View>
 
 
@@ -461,8 +469,7 @@ style={styles.myIcon}
 
 
 
-{/* ===== 友達一覧 ===== */}
-
+{/* 友達一覧 */}
 
 
 
@@ -496,8 +503,6 @@ style={styles.myIcon}
 
 
 
-
-
 {
 
 friends.map(
@@ -505,8 +510,8 @@ friends.map(
 (friend)=>{
 
 
-const course =
 
+const course =
 
 friend.courses
 
@@ -539,18 +544,20 @@ style={styles.friendRow}
 
 <Image
 
-source={{
+source={
 
-uri:
+avatarImages[friend.avatar]
 
-"https://i.pravatar.cc/100?img=12"
+??
 
-}}
+avatarImages.icon6
+
+}
 
 style={styles.friendIcon}
 
-
 />
+
 
 
 
@@ -566,11 +573,13 @@ style={styles.friendIcon}
 
 
 
+
 <Text style={styles.facultyBadge}>
 
 {facultyMap[friend.faculty]}
 
 </Text>
+
 
 
 
@@ -585,15 +594,15 @@ style={styles.friendIcon}
 
 
 
+
+
 </View>
 
 
 );
 
 
-
 }
-
 
 )
 
@@ -604,6 +613,7 @@ style={styles.friendIcon}
 
 
 </View>
+
 
 
 
@@ -632,11 +642,9 @@ const styles = StyleSheet.create({
 
 container:{
 
-
 flex:1,
 
 backgroundColor:"#ffd6dc"
-
 
 },
 
@@ -644,38 +652,26 @@ backgroundColor:"#ffd6dc"
 
 loading:{
 
-
 flex:1,
 
 justifyContent:"center",
 
 alignItems:"center"
 
-
 },
 
 
 
 
-
-
-
-// ===== プロフィール =====
-
-
-
 profileContainer:{
 
-
 flex:1
-
 
 },
 
 
 
 profileContent:{
-
 
 flex:9,
 
@@ -687,18 +683,15 @@ justifyContent:"space-between",
 
 paddingHorizontal:10
 
-
 },
 
 
 
 iconArea:{
 
-
 flex:1,
 
 alignItems:"flex-start"
-
 
 },
 
@@ -706,13 +699,11 @@ alignItems:"flex-start"
 
 infoArea:{
 
-
 flex:1,
 
 alignItems:"flex-end",
 
 paddingRight:15
-
 
 },
 
@@ -720,13 +711,11 @@ paddingRight:15
 
 myIcon:{
 
-
 width:160,
 
 height:160,
 
 borderRadius:80
-
 
 },
 
@@ -734,9 +723,7 @@ borderRadius:80
 
 mbti:{
 
-
 fontSize:25
-
 
 },
 
@@ -744,18 +731,15 @@ fontSize:25
 
 info:{
 
-
 fontSize:18,
 
 marginTop:10
-
 
 },
 
 
 
 nameArea:{
-
 
 flexDirection:"row",
 
@@ -765,18 +749,15 @@ alignItems:"center",
 
 gap:10
 
-
 },
 
 
 
 name:{
 
-
 fontSize:26,
 
 fontWeight:"bold"
-
 
 },
 
@@ -784,11 +765,9 @@ fontWeight:"bold"
 
 studentId:{
 
-
 fontSize:16,
 
 color:"#555"
-
 
 },
 
@@ -797,25 +776,17 @@ color:"#555"
 
 
 
-
-// ===== 友達一覧 =====
-
-
-
 friendContainer:{
-
 
 flex:2,
 
 paddingHorizontal:10
-
 
 },
 
 
 
 friendHeader:{
-
 
 flexDirection:"row",
 
@@ -825,18 +796,15 @@ alignItems:"center",
 
 marginBottom:15
 
-
 },
 
 
 
 friendTitle:{
 
-
 fontSize:22,
 
 marginLeft:20
-
 
 },
 
@@ -844,20 +812,15 @@ marginLeft:20
 
 friendCount:{
 
-
 fontSize:18,
 
 marginRight:20
-
 
 },
 
 
 
-
-
 friendRow:{
-
 
 flexDirection:"row",
 
@@ -867,13 +830,11 @@ marginBottom:18,
 
 paddingHorizontal:20
 
-
 },
 
 
 
 friendIcon:{
-
 
 width:55,
 
@@ -881,13 +842,11 @@ height:55,
 
 borderRadius:30
 
-
 },
 
 
 
 friendName:{
-
 
 fontSize:18,
 
@@ -895,13 +854,11 @@ marginLeft:20,
 
 width:100
 
-
 },
 
 
 
 facultyBadge:{
-
 
 fontSize:18,
 
@@ -909,21 +866,17 @@ width:30,
 
 textAlign:"center"
 
-
 },
 
 
 
 course:{
 
-
 fontSize:16,
 
 marginLeft:5
 
-
 }
-
 
 
 });
