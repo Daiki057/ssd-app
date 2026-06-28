@@ -9,20 +9,23 @@ import {
   View,
 } from "react-native";
 
+
 import {
   router
 } from "expo-router";
+
 
 import {
   useEffect,
   useState
 } from "react";
 
+
 import {
   doc,
-  onSnapshot,
-  getDoc
+  onSnapshot
 } from "firebase/firestore";
+
 
 import {
   auth,
@@ -35,6 +38,7 @@ import {
 
 const facultyMap:any = {
 
+
   "企業情報学部":"J",
 
   "環境ツーリズム学部":"T",
@@ -46,6 +50,8 @@ const facultyMap:any = {
   "共創情報学部":"K"
 
 };
+
+
 
 
 
@@ -64,6 +70,8 @@ useState<any>(null);
 const [friends,setFriends]
 =
 useState<any[]>([]);
+
+
 
 
 
@@ -94,15 +102,15 @@ uid
 
 
 
-// 自分プロフィール監視
 
-const unsubscribe =
+const unsubscribeUser =
 
 onSnapshot(
 
 userRef,
 
-async(snapshot)=>{
+(snapshot)=>{
+
 
 
 if(!snapshot.exists())
@@ -126,57 +134,101 @@ data.friends ?? [];
 
 
 
-const friendData:any[] = [];
+
+const unsubscribeFriends:any[] = [];
 
 
 
 
-for(
-const id of friendIds
-){
+
+friendIds.forEach(
+
+(friendId:string)=>{
 
 
 
-const friendSnap =
-
-await getDoc(
+const friendRef =
 
 doc(
 db,
 "users",
-id
-)
+friendId
+);
+
+
+
+
+
+const unsubscribeFriend =
+
+onSnapshot(
+
+friendRef,
+
+(friendSnapshot)=>{
+
+
+if(!friendSnapshot.exists())
+return;
+
+
+
+const friendData = {
+
+
+uid:friendId,
+
+...friendSnapshot.data()
+
+};
+
+
+
+
+setFriends(prev=>{
+
+
+const filtered =
+
+prev.filter(
+
+(friend)=>
+
+friend.uid !== friendId
 
 );
 
 
 
-if(friendSnap.exists()){
+return [
 
+...filtered,
 
-friendData.push({
+friendData
 
-uid:id,
-
-...friendSnap.data()
+];
 
 
 });
 
 
-}
-
-
 
 }
 
 
 
-setFriends(friendData);
+);
+
+
+
+unsubscribeFriends.push(
+unsubscribeFriend
+);
 
 
 
 }
+
 
 
 );
@@ -185,13 +237,41 @@ setFriends(friendData);
 
 
 
-return ()=>unsubscribe();
+
+return()=>{
+
+
+unsubscribeFriends.forEach(
+
+(unsub)=>unsub()
+
+);
+
+
+};
+
+
+
+}
+
+);
+
+
+
+
+
+
+return()=>{
+
+
+unsubscribeUser();
+
+
+};
 
 
 
 },[]);
-
-
 
 
 
@@ -225,6 +305,8 @@ return(
 
 
 
+
+
 return(
 
 
@@ -240,7 +322,11 @@ flexGrow:1
 
 
 
-{/* プロフィール */}
+
+
+{/* ===== 自分プロフィール ===== */}
+
+
 
 <View style={styles.profileContainer}>
 
@@ -248,8 +334,7 @@ flexGrow:1
 <View style={styles.profileContent}>
 
 
-
-<View style={styles.leftColumn}>
+<View style={styles.iconArea}>
 
 
 <TouchableOpacity
@@ -265,20 +350,23 @@ router.push("/qr");
 
 <Image
 
+
 source={{
 
 uri:
+
 "https://i.pravatar.cc/300?img=5"
 
 }}
 
+
 style={styles.myIcon}
+
 
 />
 
 
 </TouchableOpacity>
-
 
 
 </View>
@@ -287,9 +375,7 @@ style={styles.myIcon}
 
 
 
-
-
-<View style={styles.rightColumn}>
+<View style={styles.infoArea}>
 
 
 <Text style={styles.mbti}>
@@ -361,7 +447,6 @@ style={styles.myIcon}
 </Text>
 
 
-
 </View>
 
 
@@ -375,7 +460,11 @@ style={styles.myIcon}
 
 
 
-{/* 友達一覧 */}
+
+{/* ===== 友達一覧 ===== */}
+
+
+
 
 <View style={styles.friendContainer}>
 
@@ -397,7 +486,13 @@ style={styles.myIcon}
 
 </Text>
 
+
+
 </View>
+
+
+
+
 
 
 
@@ -412,13 +507,18 @@ friends.map(
 
 const course =
 
+
 friend.courses
 
-?.split(",")[0]
+?
 
-??
+friend.courses.split(",")[0]
+
+:
 
 "講義未登録";
+
+
 
 
 
@@ -435,6 +535,8 @@ style={styles.friendRow}
 
 
 
+
+
 <Image
 
 source={{
@@ -446,6 +548,7 @@ uri:
 }}
 
 style={styles.friendIcon}
+
 
 />
 
@@ -462,6 +565,7 @@ style={styles.friendIcon}
 
 
 
+
 <Text style={styles.facultyBadge}>
 
 {facultyMap[friend.faculty]}
@@ -474,10 +578,9 @@ style={styles.friendIcon}
 
 <Text style={styles.course}>
 
-：{course}
+:{course}
 
 </Text>
-
 
 
 
@@ -506,6 +609,7 @@ style={styles.friendIcon}
 
 
 
+
 </ScrollView>
 
 
@@ -528,9 +632,11 @@ const styles = StyleSheet.create({
 
 container:{
 
+
 flex:1,
 
 backgroundColor:"#ffd6dc"
+
 
 },
 
@@ -538,13 +644,16 @@ backgroundColor:"#ffd6dc"
 
 loading:{
 
+
 flex:1,
 
 justifyContent:"center",
 
 alignItems:"center"
 
+
 },
+
 
 
 
@@ -557,13 +666,16 @@ alignItems:"center"
 
 profileContainer:{
 
-flex:1,
+
+flex:1
+
 
 },
 
 
 
 profileContent:{
+
 
 flex:9,
 
@@ -573,29 +685,34 @@ alignItems:"center",
 
 justifyContent:"space-between",
 
-paddingHorizontal:10,
+paddingHorizontal:10
+
 
 },
 
 
 
-leftColumn:{
+iconArea:{
+
 
 flex:1,
 
-alignItems:"flex-start",
+alignItems:"flex-start"
+
 
 },
 
 
 
-rightColumn:{
+infoArea:{
+
 
 flex:1,
 
 alignItems:"flex-end",
 
-paddingRight:15,
+paddingRight:15
+
 
 },
 
@@ -603,11 +720,13 @@ paddingRight:15,
 
 myIcon:{
 
+
 width:160,
 
 height:160,
 
 borderRadius:80
+
 
 },
 
@@ -615,7 +734,9 @@ borderRadius:80
 
 mbti:{
 
-fontSize:25,
+
+fontSize:25
+
 
 },
 
@@ -623,9 +744,11 @@ fontSize:25,
 
 info:{
 
+
 fontSize:18,
 
-marginTop:10,
+marginTop:10
+
 
 },
 
@@ -633,13 +756,15 @@ marginTop:10,
 
 nameArea:{
 
-alignItems:"center",
 
 flexDirection:"row",
 
 justifyContent:"center",
 
+alignItems:"center",
+
 gap:10
+
 
 },
 
@@ -647,9 +772,11 @@ gap:10
 
 name:{
 
+
 fontSize:26,
 
 fontWeight:"bold"
+
 
 },
 
@@ -657,9 +784,11 @@ fontWeight:"bold"
 
 studentId:{
 
+
 fontSize:16,
 
 color:"#555"
+
 
 },
 
@@ -675,15 +804,18 @@ color:"#555"
 
 friendContainer:{
 
+
 flex:2,
 
 paddingHorizontal:10
+
 
 },
 
 
 
 friendHeader:{
+
 
 flexDirection:"row",
 
@@ -693,15 +825,18 @@ alignItems:"center",
 
 marginBottom:15
 
+
 },
 
 
 
 friendTitle:{
 
+
 fontSize:22,
 
 marginLeft:20
+
 
 },
 
@@ -709,9 +844,11 @@ marginLeft:20
 
 friendCount:{
 
+
 fontSize:18,
 
 marginRight:20
+
 
 },
 
@@ -721,6 +858,7 @@ marginRight:20
 
 friendRow:{
 
+
 flexDirection:"row",
 
 alignItems:"center",
@@ -729,11 +867,13 @@ marginBottom:18,
 
 paddingHorizontal:20
 
+
 },
 
 
 
 friendIcon:{
+
 
 width:55,
 
@@ -741,11 +881,13 @@ height:55,
 
 borderRadius:30
 
+
 },
 
 
 
 friendName:{
+
 
 fontSize:18,
 
@@ -753,15 +895,20 @@ marginLeft:20,
 
 width:100
 
+
 },
 
 
 
 facultyBadge:{
 
+
 fontSize:18,
 
-marginLeft:5
+width:30,
+
+textAlign:"center"
+
 
 },
 
@@ -769,11 +916,13 @@ marginLeft:5
 
 course:{
 
+
 fontSize:16,
 
 marginLeft:5
 
-},
+
+}
 
 
 
