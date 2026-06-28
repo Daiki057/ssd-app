@@ -6,13 +6,8 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
-
-
-import {
-  router
-} from "expo-router";
 
 
 import {
@@ -33,20 +28,21 @@ import {
 } from "../../firebaseConfig";
 
 
+import {
+  router
+} from "expo-router";
 
 
 
-const facultyMap:any = {
 
-  "企業情報学部":"J",
+const avatars:any = {
 
-  "環境ツーリズム学部":"T",
-
-  "社会福祉学部":"F",
-
-  "地域経営学部":"C",
-
-  "共創情報学部":"K"
+  icon1: require("../../assets/icons/icon1.png"),
+  icon2: require("../../assets/icons/icon2.png"),
+  icon3: require("../../assets/icons/icon3.png"),
+  icon4: require("../../assets/icons/icon4.png"),
+  icon5: require("../../assets/icons/icon5.png"),
+  icon6: require("../../assets/icons/icon6.png"),
 
 };
 
@@ -54,20 +50,61 @@ const facultyMap:any = {
 
 
 
-const avatarImages:any = {
-icon1:
-require("../../assets/icons/icon1.png"),
-icon2:
-require("../../assets/icons/icon2.png"),
-icon3:
-require("../../assets/icons/icon3.png"),
-icon4:
-require("../../assets/icons/icon4.png"),
-icon5:
-require("../../assets/icons/icon5.png"),
-icon6:
-require("../../assets/icons/icon6.png")
+const facultyInitial:any = {
+
+  "企業情報学部":"Ⓙ",
+  "環境ツーリズム学部":"Ⓣ",
+  "社会福祉学部":"Ⓕ",
+  "地域経営学部":"Ⓒ",
+  "共創情報学部":"Ⓚ",
+
 };
+
+
+
+
+
+
+const formatBirth = (value:string)=>{
+
+
+  if(!value)
+    return "-";
+
+
+  if(value.includes("年"))
+    return value;
+
+
+
+  if(value.length===8){
+
+
+    return (
+
+      value.slice(0,4)
+      +
+      "年"
+      +
+      Number(value.slice(4,6))
+      +
+      "月"
+      +
+      Number(value.slice(6,8))
+      +
+      "日"
+
+    );
+
+  }
+
+
+  return value;
+
+
+};
+
+
 
 
 
@@ -79,15 +116,10 @@ export default function Home(){
 
 
 
-const [profile,setProfile]
-=
-useState<any>(null);
+const [user,setUser] = useState<any>(null);
 
+const [friends,setFriends] = useState<any[]>([]);
 
-
-const [friends,setFriends]
-=
-useState<any[]>([]);
 
 
 
@@ -102,6 +134,7 @@ const uid =
 auth.currentUser?.uid;
 
 
+
 if(!uid)
 return;
 
@@ -109,132 +142,33 @@ return;
 
 
 
-const userRef =
+const unsubUser = onSnapshot(
+
+
 doc(
 db,
 "users",
 uid
-);
+),
 
 
-
-
-
-const unsubscribeUser =
-
-onSnapshot(
-
-userRef,
 
 (snapshot)=>{
 
 
-if(!snapshot.exists())
-return;
+if(snapshot.exists()){
 
 
+setUser({
 
-const data =
-snapshot.data();
+uid,
 
-
-
-setProfile(data);
-
-
-
-
-
-const friendIds =
-data.friends ?? [];
-
-
-
-
-
-const unsubscribeFriends:any[]=[];
-
-
-
-
-
-friendIds.forEach(
-
-(friendId:string)=>{
-
-
-
-const friendRef =
-doc(
-db,
-"users",
-friendId
-);
-
-
-
-
-
-const unsubscribeFriend =
-
-onSnapshot(
-
-friendRef,
-
-(friendSnap)=>{
-
-
-if(!friendSnap.exists())
-return;
-
-
-
-
-const friendData = {
-
-uid:friendId,
-
-...friendSnap.data()
-
-};
-
-
-
-
-
-setFriends(prev=>{
-
-
-return [
-
-...prev.filter(
-
-(f)=>
-
-f.uid !== friendId
-
-),
-
-friendData
-
-];
-
+...snapshot.data()
 
 });
 
 
-
 }
-
-);
-
-
-
-unsubscribeFriends.push(
-
-unsubscribeFriend
-
-);
 
 
 
@@ -246,37 +180,7 @@ unsubscribeFriend
 
 
 
-
-
-return()=>{
-
-
-unsubscribeFriends.forEach(
-
-(unsub)=>unsub()
-
-);
-
-
-};
-
-
-
-}
-
-);
-
-
-
-
-
-return()=>{
-
-
-unsubscribeUser();
-
-
-};
+return ()=>unsubUser();
 
 
 
@@ -288,15 +192,147 @@ unsubscribeUser();
 
 
 
-if(!profile){
+
+
+useEffect(()=>{
+
+
+if(!user)
+return;
+
+
+
+const friendIds =
+user.friends ?? [];
+
+
+
+const unsubList:any[] = [];
+
+
+
+friendIds.forEach((friendUid:string)=>{
+
+
+
+const unsub = onSnapshot(
+
+
+doc(
+db,
+"users",
+friendUid
+),
+
+
+
+(snapshot)=>{
+
+
+
+setFriends((prev)=>{
+
+
+const removed =
+
+prev.filter(
+
+(f)=>f.uid !== friendUid
+
+);
+
+
+
+
+
+// 削除済みユーザーの場合
+// 表示だけ消す
+
+if(!snapshot.exists()){
+
+
+return removed;
+
+
+}
+
+
+
+
+
+return [
+
+...removed,
+
+{
+
+uid:friendUid,
+
+...snapshot.data()
+
+}
+
+];
+
+
+});
+
+
+
+}
+
+
+
+);
+
+
+
+unsubList.push(unsub);
+
+
+
+});
+
+
+
+
+
+
+return ()=>{
+
+
+unsubList.forEach(
+
+(u:()=>void)=>u()
+
+);
+
+
+};
+
+
+
+},[user]);
+
+
+
+
+
+
+
+
+
+if(!user){
 
 
 return(
 
-<View style={styles.loading}>
+<View>
 
 <Text>
+
 読み込み中...
+
 </Text>
 
 </View>
@@ -313,16 +349,14 @@ return(
 
 
 
+
 return(
+
 
 
 <ScrollView
 
 style={styles.container}
-
-contentContainerStyle={{
-flexGrow:1
-}}
 
 >
 
@@ -330,24 +364,17 @@ flexGrow:1
 
 
 
-{/* 自分プロフィール */}
-
-
-
 <View style={styles.profileContainer}>
 
 
-<View style={styles.profileContent}>
-
-
-<View style={styles.iconArea}>
+<View style={styles.leftProfile}>
 
 
 <TouchableOpacity
 
 onPress={()=>{
 
-router.push("/qr");
+router.push("/profile");
 
 }}
 
@@ -356,26 +383,28 @@ router.push("/qr");
 
 <Image
 
-source={
-
-avatarImages[profile.avatar]
-
-??
-
-avatarImages.icon1
-
-}
+source={avatars[user.avatar]}
 
 style={styles.myIcon}
 
 />
 
 
-
 </TouchableOpacity>
 
 
 
+
+
+<Text style={styles.myName}>
+
+{user.name}
+
+</Text>
+
+
+
+
 </View>
 
 
@@ -384,12 +413,14 @@ style={styles.myIcon}
 
 
 
-<View style={styles.infoArea}>
 
 
-<Text style={styles.mbti}>
+<View style={styles.rightProfile}>
 
-{profile.mbti}
+
+<Text style={styles.info}>
+
+{user.mbti}
 
 </Text>
 
@@ -397,68 +428,42 @@ style={styles.myIcon}
 
 <Text style={styles.info}>
 
-誕生日 {profile.birthDate}
+誕生日：
+{formatBirth(user.birthDate)}
 
 </Text>
+
 
 
 
 <Text style={styles.info}>
 
-{profile.faculty}
+{user.faculty}
 
 </Text>
+
 
 
 
 <Text style={styles.info}>
 
-サークル:{profile.circle}
+サークル：
+{user.circle || "-"}
 
 </Text>
+
 
 
 
 <Text style={styles.info}>
 
-講義:{profile.courses}
-
-</Text>
-
-
-</View>
-
-
-
-</View>
-
-
-
-
-
-
-<View style={styles.nameArea}>
-
-
-<Text style={styles.name}>
-
-{profile.name}
+講義：
+{user.courses?.split(",")[0] || "-"}
 
 </Text>
 
 
 
-<Text style={styles.studentId}>
-
-{profile.studentId}
-
-</Text>
-
-
-</View>
-
-
-
 </View>
 
 
@@ -466,36 +471,25 @@ style={styles.myIcon}
 
 
 
+</View>
 
 
 
-{/* 友達一覧 */}
+
+
+
+
 
 
 
 <View style={styles.friendContainer}>
 
 
-<View style={styles.friendHeader}>
+<Text style={styles.title}>
 
-
-<Text style={styles.friendTitle}>
-
-友達一覧▼
+友達一覧 {friends.length}人
 
 </Text>
-
-
-
-<Text style={styles.friendCount}>
-
-{friends.length}人
-
-</Text>
-
-
-
-</View>
 
 
 
@@ -505,29 +499,8 @@ style={styles.myIcon}
 
 {
 
-friends.map(
+friends.map((friend)=>(
 
-(friend)=>{
-
-
-
-const course =
-
-friend.courses
-
-?
-
-friend.courses.split(",")[0]
-
-:
-
-"講義未登録";
-
-
-
-
-
-return(
 
 
 <View
@@ -540,19 +513,9 @@ style={styles.friendRow}
 
 
 
-
-
 <Image
 
-source={
-
-avatarImages[friend.avatar]
-
-??
-
-avatarImages.icon6
-
-}
+source={avatars[friend.avatar]}
 
 style={styles.friendIcon}
 
@@ -562,36 +525,33 @@ style={styles.friendIcon}
 
 
 
-
-<Text style={styles.friendName}>
+<Text style={styles.friendText}>
 
 {friend.name}
 
+
+
+{"       "}
+
+
+
+{
+
+facultyInitial[friend.faculty]
+
+||""
+
+}
+
+
+
+：
+
+{friend.courses?.split(",")[0] || "-"}
+
+
+
 </Text>
-
-
-
-
-
-
-<Text style={styles.facultyBadge}>
-
-{facultyMap[friend.faculty]}
-
-</Text>
-
-
-
-
-
-
-<Text style={styles.course}>
-
-:{course}
-
-</Text>
-
-
 
 
 
@@ -599,12 +559,9 @@ style={styles.friendIcon}
 </View>
 
 
-);
 
+))
 
-}
-
-)
 
 }
 
@@ -613,7 +570,6 @@ style={styles.friendIcon}
 
 
 </View>
-
 
 
 
@@ -623,7 +579,9 @@ style={styles.friendIcon}
 </ScrollView>
 
 
+
 );
+
 
 
 }
@@ -650,124 +608,90 @@ backgroundColor:"#ffd6dc"
 
 
 
-loading:{
-
-flex:1,
-
-justifyContent:"center",
-
-alignItems:"center"
-
-},
-
-
-
-
 profileContainer:{
 
-flex:1
-
-},
-
-
-
-profileContent:{
-
-flex:9,
 
 flexDirection:"row",
 
 alignItems:"center",
 
-justifyContent:"space-between",
+padding:20,
 
-paddingHorizontal:10
 
 },
 
 
 
-iconArea:{
-
-flex:1,
-
-alignItems:"flex-start"
-
-},
 
 
+leftProfile:{
 
-infoArea:{
 
-flex:1,
+alignItems:"center",
 
-alignItems:"flex-end",
+width:150,
 
-paddingRight:15
 
 },
+
+
+
 
 
 
 myIcon:{
 
-width:160,
 
-height:160,
+width:110,
 
-borderRadius:80
+height:110,
+
+borderRadius:55,
+
 
 },
 
 
 
-mbti:{
 
-fontSize:25
+
+myName:{
+
+
+fontSize:24,
+
+fontWeight:"bold",
+
+marginTop:10,
+
 
 },
+
+
+
+
+
+rightProfile:{
+
+
+flex:1,
+
+alignItems:"flex-start",
+
+
+},
+
+
 
 
 
 info:{
 
-fontSize:18,
 
-marginTop:10
+fontSize:17,
 
-},
+marginBottom:10,
 
-
-
-nameArea:{
-
-flexDirection:"row",
-
-justifyContent:"center",
-
-alignItems:"center",
-
-gap:10
-
-},
-
-
-
-name:{
-
-fontSize:26,
-
-fontWeight:"bold"
-
-},
-
-
-
-studentId:{
-
-fontSize:16,
-
-color:"#555"
 
 },
 
@@ -778,105 +702,77 @@ color:"#555"
 
 friendContainer:{
 
-flex:2,
 
-paddingHorizontal:10
+padding:20,
+
 
 },
 
 
 
-friendHeader:{
-
-flexDirection:"row",
-
-justifyContent:"space-between",
-
-alignItems:"center",
-
-marginBottom:15
-
-},
 
 
+title:{
 
-friendTitle:{
 
 fontSize:22,
 
-marginLeft:20
+fontWeight:"bold",
+
+marginBottom:20,
+
 
 },
 
 
 
-friendCount:{
-
-fontSize:18,
-
-marginRight:20
-
-},
 
 
 
 friendRow:{
 
+
 flexDirection:"row",
 
 alignItems:"center",
 
-marginBottom:18,
+marginBottom:20,
 
-paddingHorizontal:20
 
 },
+
+
 
 
 
 friendIcon:{
 
-width:55,
 
-height:55,
+width:60,
 
-borderRadius:30
+height:60,
+
+borderRadius:30,
+
 
 },
 
 
 
-friendName:{
 
-fontSize:18,
+
+friendText:{
+
+
+fontSize:17,
 
 marginLeft:20,
 
-width:100
+flexShrink:1,
+
 
 },
 
-
-
-facultyBadge:{
-
-fontSize:18,
-
-width:30,
-
-textAlign:"center"
-
-},
-
-
-
-course:{
-
-fontSize:16,
-
-marginLeft:5
-
-}
 
 
 });
