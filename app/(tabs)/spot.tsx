@@ -3,13 +3,15 @@
 import React, { useEffect, useState } from "react";
 
 import {
-  View,
+  Alert,
   StyleSheet,
-  TouchableOpacity,
   Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import MapView, {
+  MapPressEvent,
   Marker,
 } from "react-native-maps";
 
@@ -20,17 +22,34 @@ import {
 
 import { db } from "../../firebaseConfig";
 
-export default function SpotScreen() {
+import { useRouter } from "expo-router";
 
-  const [category, setCategory] = useState("all");
+export default function SpotScreen(){
 
-  const [spots, setSpots] = useState<any[]>([]);
+  const router = useRouter();
 
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [category,setCategory]
+  = useState("all");
+
+  const [spots,setSpots]
+  = useState<any[]>([]);
+
+  const [jobs,setJobs]
+  = useState<any[]>([]);
+
+  const [selectedLocation,setSelectedLocation]
+  = useState<{
+
+    latitude:number;
+
+    longitude:number;
+
+  } | null>(null);
 
   useEffect(()=>{
 
     const spotSubscribe =
+
       onSnapshot(
 
         collection(db,"spots"),
@@ -38,13 +57,13 @@ export default function SpotScreen() {
         snapshot=>{
 
           const data =
-            snapshot.docs.map(doc=>({
+          snapshot.docs.map(doc=>({
 
-              id:doc.id,
+            id:doc.id,
 
-              ...doc.data()
+            ...doc.data()
 
-            }));
+          }));
 
           setSpots(data);
 
@@ -53,6 +72,7 @@ export default function SpotScreen() {
       );
 
     const jobSubscribe =
+
       onSnapshot(
 
         collection(db,"jobs"),
@@ -60,13 +80,13 @@ export default function SpotScreen() {
         snapshot=>{
 
           const data =
-            snapshot.docs.map(doc=>({
+          snapshot.docs.map(doc=>({
 
-              id:doc.id,
+            id:doc.id,
 
-              ...doc.data()
+            ...doc.data()
 
-            }));
+          }));
 
           setJobs(data);
 
@@ -106,138 +126,200 @@ export default function SpotScreen() {
 
   const filteredMarkers =
 
-    category === "all"
+    category==="all"
 
-    ? markers
+    ?
 
-    : markers.filter(
+    markers
+
+    :
+
+    markers.filter(
 
       item=>item.type===category
 
     );
 
-  return (
+  const handleMapPress =
+
+  (event:MapPressEvent)=>{
+
+    setSelectedLocation(
+
+      event.nativeEvent.coordinate
+
+    );
+
+  };
+
+  const openAdd = ()=>{
+
+    if(!selectedLocation){
+
+      Alert.alert(
+
+        "場所を選択してください"
+
+      );
+
+      return;
+
+    }
+
+    router.push({
+
+      pathname:"/spot/add",
+
+      params:{
+
+        latitude:
+        selectedLocation.latitude,
+
+        longitude:
+        selectedLocation.longitude
+
+      }
+
+    });
+
+  };
+
+  return(
 
     <View style={styles.container}>
 
-      {/* category */}
-
       <View style={styles.categoryContainer}>
 
+      {
+
+      [
+
         {
+          key:"all",
+          label:"すべて"
+        },
 
-          [
+        {
+          key:"shop",
+          label:"店舗"
+        },
 
-            {
-              key:"all",
-              label:"すべて"
-            },
-
-            {
-              key:"shop",
-              label:"店舗"
-            },
-
-            {
-              key:"baito",
-              label:"バイト"
-            }
-
-          ]
-
-          .map(item=>(
-
-            <TouchableOpacity
-
-              key={item.key}
-
-              style={[
-
-                styles.categoryButton,
-
-                category===item.key &&
-
-                styles.activeCategory
-
-              ]}
-
-              onPress={()=>setCategory(item.key)}
-
-            >
-
-              <Text>
-
-                {item.label}
-
-              </Text>
-
-            </TouchableOpacity>
-
-          ))
-
+        {
+          key:"baito",
+          label:"バイト"
         }
+
+      ]
+
+      .map(item=>(
+
+        <TouchableOpacity
+
+        key={item.key}
+
+        style={[
+
+          styles.categoryButton,
+
+          category===item.key &&
+
+          styles.activeCategory
+
+        ]}
+
+        onPress={()=>setCategory(item.key)}
+
+        >
+
+          <Text>
+
+            {item.label}
+
+          </Text>
+
+        </TouchableOpacity>
+
+      ))
+
+      }
 
       </View>
 
-      {/* map */}
-
       <MapView
 
-        style={styles.map}
+      style={styles.map}
 
-        initialRegion={{
+      initialRegion={{
 
-          latitude:35.0116,
+        latitude:35.0116,
 
-          longitude:135.7681,
+        longitude:135.7681,
 
-          latitudeDelta:0.01,
+        latitudeDelta:0.01,
 
-          longitudeDelta:0.01
+        longitudeDelta:0.01
 
-        }}
+      }}
+
+      onPress={handleMapPress}
 
       >
 
-        {
+      {
 
-          filteredMarkers.map(item=>(
+      filteredMarkers.map(item=>(
 
-            <Marker
+        <Marker
 
-              key={item.id}
+        key={item.id}
 
-              coordinate={{
+        coordinate={{
 
-                latitude:item.latitude,
+          latitude:item.latitude,
 
-                longitude:item.longitude
+          longitude:item.longitude
 
-              }}
+        }}
 
-              title={
+        title={
 
-                item.name ||
+          item.name ||
 
-                item.shopName ||
+          item.shopName ||
 
-                "情報"
-
-              }
-
-            />
-
-          ))
+          "情報"
 
         }
 
-      </MapView>
+        />
 
-      {/* add button */}
+      ))
+
+      }
+
+      {
+
+      selectedLocation &&
+
+      <Marker
+
+      coordinate={selectedLocation}
+
+      title="投稿予定場所"
+
+      pinColor="blue"
+
+      />
+
+      }
+
+      </MapView>
 
       <TouchableOpacity
 
-        style={styles.addButton}
+      style={styles.addButton}
+
+      onPress={openAdd}
 
       >
 
@@ -257,82 +339,82 @@ export default function SpotScreen() {
 
 const styles = StyleSheet.create({
 
-  container:{
+container:{
 
-    flex:1
+flex:1
 
-  },
+},
 
-  map:{
+map:{
 
-    flex:1
+flex:1
 
-  },
+},
 
-  categoryContainer:{
+categoryContainer:{
 
-    position:"absolute",
+position:"absolute",
 
-    top:50,
+top:50,
 
-    zIndex:10,
+zIndex:10,
 
-    flexDirection:"row",
+flexDirection:"row",
 
-    paddingHorizontal:15
+paddingHorizontal:15
 
-  },
+},
 
-  categoryButton:{
+categoryButton:{
 
-    backgroundColor:"#fff",
+backgroundColor:"#fff",
 
-    paddingVertical:8,
+paddingVertical:8,
 
-    paddingHorizontal:15,
+paddingHorizontal:15,
 
-    borderRadius:20,
+borderRadius:20,
 
-    marginRight:8,
+marginRight:8,
 
-    elevation:3
+elevation:3
 
-  },
+},
 
-  activeCategory:{
+activeCategory:{
 
-    backgroundColor:"#ddd"
+backgroundColor:"#ddd"
 
-  },
+},
 
-  addButton:{
+addButton:{
 
-    position:"absolute",
+position:"absolute",
 
-    right:20,
+right:20,
 
-    bottom:40,
+bottom:40,
 
-    width:60,
+width:60,
 
-    height:60,
+height:60,
 
-    borderRadius:30,
+borderRadius:30,
 
-    backgroundColor:"#fff",
+backgroundColor:"#fff",
 
-    justifyContent:"center",
+justifyContent:"center",
 
-    alignItems:"center",
+alignItems:"center",
 
-    elevation:5
+elevation:5
 
-  },
+},
 
-  addText:{
+addText:{
 
-    fontSize:32
+fontSize:32
 
-  }
+}
 
 });
