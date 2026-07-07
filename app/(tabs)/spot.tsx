@@ -1,7 +1,11 @@
 // スポット投稿画面です。
 // Firestore から投稿を読み込み、投稿を保存できます。
+import { useRouter } from "expo-router";
+import {
+  collection,
+  onSnapshot,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-
 import {
   Alert,
   StyleSheet,
@@ -9,30 +13,20 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
 import MapView, {
   MapPressEvent,
   Marker,
 } from "react-native-maps";
-
-import {
-  collection,
-  onSnapshot,
-} from "firebase/firestore";
-
+import CategoryBar from "../../components/spot/CategoryBar";
 import { db } from "../../firebaseConfig";
-
-import { useRouter } from "expo-router";
 
 export default function SpotScreen(){
 
   const router = useRouter();
 
-  const [category,setCategory]
-  = useState("all");
+  const [category, setCategory] = useState<"all" | "shop" | "job">("all");
 
-  const [spots,setSpots]
-  = useState<any[]>([]);
+  const [spots, setSpots] = useState<any[]>([]);
 
   const [jobs,setJobs]
   = useState<any[]>([]);
@@ -118,7 +112,7 @@ export default function SpotScreen(){
 
       ...item,
 
-      type:"baito"
+      type:"job"
 
     }))
 
@@ -188,62 +182,10 @@ export default function SpotScreen(){
 
     <View style={styles.container}>
 
-      <View style={styles.categoryContainer}>
-
-      {
-
-      [
-
-        {
-          key:"all",
-          label:"すべて"
-        },
-
-        {
-          key:"shop",
-          label:"店舗"
-        },
-
-        {
-          key:"baito",
-          label:"バイト"
-        }
-
-      ]
-
-      .map(item=>(
-
-        <TouchableOpacity
-
-        key={item.key}
-
-        style={[
-
-          styles.categoryButton,
-
-          category===item.key &&
-
-          styles.activeCategory
-
-        ]}
-
-        onPress={()=>setCategory(item.key)}
-
-        >
-
-          <Text>
-
-            {item.label}
-
-          </Text>
-
-        </TouchableOpacity>
-
-      ))
-
-      }
-
-      </View>
+      <CategoryBar
+      value={category}
+      onChange={setCategory}
+      />
 
       <MapView
 
