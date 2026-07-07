@@ -1,6 +1,5 @@
 // スポット投稿画面です。
 // Firestore から投稿を読み込み、投稿を保存できます。
-import { useRouter } from "expo-router";
 import {
   collection,
   onSnapshot,
@@ -18,11 +17,16 @@ import MapView, {
   Marker,
 } from "react-native-maps";
 import CategoryBar from "../../components/spot/CategoryBar";
+import MarkerList from "../../components/spot/MarkerList";
+import AddTypeModal from "../../components/spot/AddTypeModal";
+import ShopFormModal from "../../components/spot/ShopFormModal";
 import { db } from "../../firebaseConfig";
+import { createSpot } from "../../services/spotService";
+import { getAuth } from "firebase/auth";
 
 export default function SpotScreen(){
 
-  const router = useRouter();
+  const auth = getAuth();
 
   const [category, setCategory] = useState<"all" | "shop" | "job">("all");
 
@@ -39,6 +43,18 @@ export default function SpotScreen(){
     longitude:number;
 
   } | null>(null);
+
+  type ModalMode =
+  | "none"
+  | "select"
+  | "shop"
+  | "job"
+  | "detail";
+
+  const [modalMode,setModalMode] = useState<ModalMode>("none");
+  const [shopName,setShopName] = useState("");
+  const [shopCategory,setShopCategory] = useState("");
+  const [shopDescription,setShopDescription] = useState("");
 
   useEffect(()=>{
 
@@ -160,22 +176,47 @@ export default function SpotScreen(){
 
     }
 
-    router.push({
+    setModalMode("select");
+  };
 
-      pathname:"/spot/add",
+  const handleCreateShop = async () => {
+    if (!selectedLocation) {
+          Alert.alert("場所を選択してください");
+          return;
+    }
+    
+    if (!shopName.trim()) {
+      Alert.alert("店舗名を入力してください");
+      return;
+    }
+    
+    const user = auth.currentUser;
+    
+    if (!user) {
+      Alert.alert("ログインしてください");
+      return;
+    }
+    
+    try {
+      await createSpot({
+        name: shopName,
+        category: shopCategory,
+        description: shopDescription,
+        latitude: selectedLocation.latitude,
+        longitude: selectedLocation.longitude,
+        createdBy: user.uid,
+      });
+      setShopName("");
+      setShopCategory("");
+      setShopDescription("");
+      setSelectedLocation(null);
+      setModalMode("none");
 
-      params:{
-
-        latitude:
-        selectedLocation.latitude,
-
-        longitude:
-        selectedLocation.longitude
-
-      }
-
-    });
-
+      Alert.alert("投稿しました");
+    } catch (error) {
+      console.error(error);
+      Alert.alert("投稿に失敗しました");
+    }
   };
 
   return(
@@ -207,37 +248,9 @@ export default function SpotScreen(){
 
       >
 
-      {
-
-      filteredMarkers.map(item=>(
-
-        <Marker
-
-        key={item.id}
-
-        coordinate={{
-
-          latitude:item.latitude,
-
-          longitude:item.longitude
-
-        }}
-
-        title={
-
-          item.name ||
-
-          item.shopName ||
-
-          "情報"
-
-        }
-
-        />
-
-      ))
-
-      }
+      <MarkerList
+      markers={filteredMarkers}
+      />
 
       {
 
@@ -272,6 +285,25 @@ export default function SpotScreen(){
         </Text>
 
       </TouchableOpacity>
+
+      <AddTypeModal
+      visible={modalMode === "select"}
+      onClose={() => setModalMode("none")}
+      onSelectShop={() => setModalMode("shop")}
+      onSelectJob={() => setModalMode("job")}
+      />
+
+      <ShopFormModal
+      visible={modalMode === "shop"}
+      name={shopName}
+      category={shopCategory}
+      description={shopDescription}
+      onChangeName={setShopName}
+      onChangeCategory={setShopCategory}
+      onChangeDescription={setShopDescription}
+      onClose={() => setModalMode("none")}
+      onSubmit={handleCreateShop}
+      />
 
     </View>
 
