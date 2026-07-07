@@ -2,17 +2,26 @@
 import React from "react";
 
 import {
-  View,
-  Text,
   StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 
-import { useRouter } from "expo-router";
+import {
+  useLocalSearchParams,
+  useRouter
+} from "expo-router";
 
 export default function AddSpotScreen(){
 
   const router = useRouter();
+
+  const { latitude, longitude } =
+    useLocalSearchParams<{
+      latitude: string;
+      longitude: string;
+    }>();
 
   return (
 
@@ -29,9 +38,13 @@ export default function AddSpotScreen(){
         style={styles.button}
 
         onPress={()=>{
-
-          router.push("/spot/shopAdd");
-
+          router.push({
+            pathname:"/spot/shopAdd",
+            params:{
+              latitude,
+              longitude,
+            },
+          });
         }}
 
       >
@@ -49,9 +62,13 @@ export default function AddSpotScreen(){
         style={styles.button}
 
         onPress={()=>{
-
-          router.push("/spot/jobAdd");
-
+          router.push({
+            pathname:"/spot/jobAdd",
+            params:{
+              latitude,
+              longitude,
+            },
+          });
         }}
 
       >
