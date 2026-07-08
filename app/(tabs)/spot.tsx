@@ -1,5 +1,6 @@
 // スポット投稿画面です。
 // Firestore から投稿を読み込み、投稿を保存できます。
+import { getAuth } from "firebase/auth";
 import {
   collection,
   onSnapshot,
@@ -16,13 +17,22 @@ import MapView, {
   MapPressEvent,
   Marker,
 } from "react-native-maps";
-import CategoryBar from "../../components/spot/CategoryBar";
-import MarkerList from "../../components/spot/MarkerList";
 import AddTypeModal from "../../components/spot/AddTypeModal";
+import CategoryBar from "../../components/spot/CategoryBar";
+import JobFormModal from "../../components/spot/JobFormModal";
+import MarkerList from "../../components/spot/MarkerList";
 import ShopFormModal from "../../components/spot/ShopFormModal";
-import { db } from "../../firebaseConfig";
-import { createSpot } from "../../services/spotService";
-import { getAuth } from "firebase/auth";
+import SpotDetailModal from "../../components/spot/SpotDetailModal";import { db } from "../../firebaseConfig";
+import {
+  createJob,
+  deleteJob,
+  updateJob,
+} from "../../services/jobService";
+import {
+  createSpot,
+  deleteSpot,
+  updateSpot,
+} from "../../services/spotService";
 
 export default function SpotScreen(){
 
@@ -52,9 +62,15 @@ export default function SpotScreen(){
   | "detail";
 
   const [modalMode,setModalMode] = useState<ModalMode>("none");
+  const [selectedMarker, setSelectedMarker] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [shopName,setShopName] = useState("");
   const [shopCategory,setShopCategory] = useState("");
   const [shopDescription,setShopDescription] = useState("");
+
+  const [jobShopName,setJobShopName] = useState("");
+  const [jobSalary,setJobSalary] = useState("");
+  const [jobDescription,setJobDescription] = useState("");
 
   useEffect(()=>{
 
@@ -198,19 +214,32 @@ export default function SpotScreen(){
     }
     
     try {
-      await createSpot({
-        name: shopName,
-        category: shopCategory,
-        description: shopDescription,
-        latitude: selectedLocation.latitude,
-        longitude: selectedLocation.longitude,
-        createdBy: user.uid,
-      });
+      if (isEditing && selectedMarker) {
+
+        await updateSpot(selectedMarker.id, {
+          name: shopName,
+          category: shopName,
+          description: shopDescription,
+        });
+      } else {
+
+        await createSpot({
+          name: shopName,
+          category: shopCategory,
+          description: shopDescription,
+          latitude: selectedLocation.latitude,
+          longitude: selectedLocation.longitude,
+          createdBy: user.uid,
+        });
+      }
+
       setShopName("");
       setShopCategory("");
       setShopDescription("");
       setSelectedLocation(null);
       setModalMode("none");
+      setIsEditing(false);
+      setSelectedMarker(null);
 
       Alert.alert("投稿しました");
     } catch (error) {
@@ -219,7 +248,105 @@ export default function SpotScreen(){
     }
   };
 
+  const handleCreateJob =async () => {
+    if (!selectedLocation) {
+      Alert.alert("場所を選択してください");
+      return;
+    }
+
+    if (!jobShopName.trim()) {
+      Alert.alert("店舗名を選択してください");
+      return;
+    }
+
+    const user = auth.currentUser;
+
+    if (!user) {
+      Alert.alert("ログインしてください");
+      return;
+    }
+
+    try {
+      if (isEditing && selectedMarker) {
+
+        await updateJob(selectedMarker.id, {
+          shopName: jobShopName,
+          salary: jobSalary,
+          description: jobDescription,
+        });
+      } else {
+
+        await createJob({
+          shopName: jobShopName,
+          salary: jobSalary,
+          description: jobDescription,
+          latitude: selectedLocation.latitude,
+          longitude: selectedLocation.longitude,
+          createdBy: user.uid,
+        });
+      }
+      setJobShopName("");
+      setJobSalary("");
+      setJobDescription("");
+      setSelectedLocation(null);
+      setModalMode("none");
+      setIsEditing(false);
+      setSelectedMarker(null);
+
+      Alert.alert("投稿しました");
+    }catch (error) {
+      console.error(error);
+      Alert.alert("投稿に失敗しました")
+    }
+  };
+
+  const isOwner =
+  selectedMarker?.createdBy === auth.currentUser?.uid;
+
+  const handleEdit = () => {
+    if (!selectedMarker) return;
+
+    if (selectedMarker.type === "shop") {
+      setShopName(selectedMarker.name ?? "");
+      setShopCategory(selectedMarker.category ?? "");
+      setShopDescription(selectedMarker.description ?? "");
+      setModalMode("shop");
+    } else {
+      setJobShopName(selectedMarker.shopName ?? "");
+      setJobSalary(selectedMarker.salary ?? "");
+      setJobDescription(selectedMarker.description ?? "");
+      setModalMode("job");
+    }
+
+    setIsEditing(true);
+  }
+  
+  const handleDelete = async () => {
+    if (!selectedMarker) return;
+
+    try {
+      if (selectedMarker.type === "shop") {
+        await deleteSpot(selectedMarker.id);
+      } else {
+        await deleteJob(selectedMarker.id);
+      }
+
+      setSelectedMarker(null);
+      setModalMode("none");
+      setIsEditing(false);
+      setSelectedMarker(null);
+
+      Alert.alert("削除しました");
+
+    } catch (error) {
+      console.error(error);
+      Alert.alert("削除に失敗しました");
+    }
+  };
+
   return(
+
+    <>
 
     <View style={styles.container}>
 
@@ -250,6 +377,10 @@ export default function SpotScreen(){
 
       <MarkerList
       markers={filteredMarkers}
+      onPress={(marker) => {
+        setSelectedMarker(marker);
+        setModalMode("detail");
+      }}
       />
 
       {
@@ -307,8 +438,34 @@ export default function SpotScreen(){
 
     </View>
 
-  );
+    <JobFormModal
+      visible={modalMode === "job"}
+      shopName={jobShopName}
+      salary={jobSalary}
+      description={jobDescription}
+      onChangeShopName={setJobShopName}
+      onChangeSalary={setJobSalary}
+      onChangeDescription={setJobDescription}
+      onClose={() => setModalMode("none")}
+      onSubmit={handleCreateJob}
+    />
+    
+    <SpotDetailModal
+    isOwner={isOwner}
+    visible={modalMode === "detail"}
+    marker={selectedMarker}
+    onClose={() => {
+      setSelectedMarker(null);
+      setModalMode("none");
+      setIsEditing(false);
+      setSelectedMarker(null);
+    }}
+    onEdit={handleEdit}
+    onDelete={handleDelete}
+    />
 
+    </>
+  );
 }
 
 const styles = StyleSheet.create({

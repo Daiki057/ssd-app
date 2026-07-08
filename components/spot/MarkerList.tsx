@@ -12,7 +12,7 @@ export type MarkerItem = {
 type Props = {
   markers: MarkerItem[];
   onPress?: (marker: MarkerItem) => void;
-};
+}
 
 export default function MarkerList({ markers, onPress }: Props) {
   return (
