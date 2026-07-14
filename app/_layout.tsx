@@ -5,6 +5,8 @@ import { Stack } from "expo-router";
 
 // アプリ全体のルートレイアウトです。
 // ここで `AuthProvider` をラップして、子画面でログイン状態を共有します。
+import { SafeAreaProvider } from "react-native-safe-area-context";
+
 import {
   AuthProvider
 } from "./auth/AuthProvider";

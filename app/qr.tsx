@@ -7,6 +7,7 @@ import {
   View
 } from "react-native";
 
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
   router
@@ -28,6 +29,7 @@ import {
 
 
 export default function QR(){
+  const insets = useSafeAreaInsets();
 
 
 
@@ -58,7 +60,7 @@ return(
 
 <ScrollView
 
-contentContainerStyle={styles.container}
+contentContainerStyle={[styles.container, { paddingTop: insets.top }]}
 
 >
 
@@ -165,8 +167,6 @@ container:{
 flex:1,
 
 alignItems:"center",
-
-paddingTop:60,
 
 backgroundColor:"#fff"
 

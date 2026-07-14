@@ -1,4 +1,5 @@
 import React from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type Category = "all" | "shop" | "job";
@@ -15,8 +16,9 @@ const categories = [
 ] as const;
 
 export default function CategoryBar({ value, onChange }: Props) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.container}>
+    <View style={[ styles.container, {top: insets.top + 10,},]}>
       {categories.map(item => (
         <TouchableOpacity
           key={item.key}
@@ -43,7 +45,6 @@ export default function CategoryBar({ value, onChange }: Props) {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: 50,
     left: 0,
     right: 0,
     zIndex: 10,
