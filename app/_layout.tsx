@@ -5,7 +5,7 @@ import { Stack } from "expo-router";
 
 // アプリ全体のルートレイアウトです。
 // ここで `AuthProvider` をラップして、子画面でログイン状態を共有します。
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import {
   AuthProvider
@@ -14,30 +14,29 @@ import {
 export default function Layout(){
 
   return (
+    <SafeAreaProvider>
+      <SafeAreaView style={{ flex: 1 }}>
+        <AuthProvider>
+          <Stack>
+            {/* ログイン画面と、ログイン後のタブ画面を切り替える設定です。 */}
+            <Stack.Screen
+              name="login"
+              options={{
+              headerShown:false
+            }}
+            />
+            
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+              headerShown:false
+            }}
+            />
+          </Stack>
 
-    <AuthProvider>
-
-      <Stack>
-
-        {/* ログイン画面と、ログイン後のタブ画面を切り替える設定です。 */}
-        <Stack.Screen
-          name="login"
-          options={{
-            headerShown:false
-          }}
-        />
-
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerShown:false
-          }}
-        />
-
-      </Stack>
-
-    </AuthProvider>
-
+        </AuthProvider>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 
 }

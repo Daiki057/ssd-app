@@ -9,31 +9,24 @@ import {
   View
 } from "react-native";
 
-
 import {
   useEffect,
   useState
 } from "react";
-
 
 import {
   doc,
   onSnapshot
 } from "firebase/firestore";
 
-
 import {
   auth,
   db
 } from "../../firebaseConfig";
 
-
 import {
   router
 } from "expo-router";
-
-
-
 
 const avatars:any = {
 
@@ -46,10 +39,6 @@ const avatars:any = {
 
 };
 
-
-
-
-
 const facultyInitial:any = {
 
   "企業情報学部":"Ⓙ",
@@ -60,25 +49,15 @@ const facultyInitial:any = {
 
 };
 
-
-
-
-
-
 const formatBirth = (value:string)=>{
-
 
   if(!value)
     return "-";
 
-
   if(value.includes("年"))
     return value;
 
-
-
   if(value.length===8){
-
 
     return (
 
@@ -98,52 +77,55 @@ const formatBirth = (value:string)=>{
 
   }
 
-
   return value;
-
 
 };
 
+const formatList = (value: any) => {
 
+  if (!value)
+    return "-";
 
+  if (Array.isArray(value))
+    return value.length > 0 ? value.join("、") : "-";
 
+  if (typeof value === "string")
+    return value;
 
+  return "-";
 
+};
 
+const firstItem = (value: any) => {
 
+  if (!value)
+    return "-";
+
+  if (Array.isArray(value))
+    return value[0] ?? "-";
+
+  if (typeof value === "string")
+    return value.split(",")[0];
+
+  return "-";
+
+};
 
 export default function Home(){
-
-
 
 const [user,setUser] = useState<any>(null);
 
 const [friends,setFriends] = useState<any[]>([]);
 
-
-
-
-
-
-
-
 useEffect(()=>{
-
 
 const uid =
 auth.currentUser?.uid;
 
-
-
 if(!uid)
 return;
 
-
-
-
-
 const unsubUser = onSnapshot(
-
 
 doc(
 db,
@@ -151,13 +133,9 @@ db,
 uid
 ),
 
-
-
 (snapshot)=>{
 
-
 if(snapshot.exists()){
-
 
 setUser({
 
@@ -167,56 +145,29 @@ uid,
 
 });
 
-
 }
 
-
-
 }
-
-
 
 );
 
-
-
 return ()=>unsubUser();
-
-
 
 },[]);
 
-
-
-
-
-
-
-
-
 useEffect(()=>{
-
 
 if(!user)
 return;
 
-
-
 const friendIds =
 user.friends ?? [];
 
-
-
 const unsubList:any[] = [];
-
-
 
 friendIds.forEach((friendUid:string)=>{
 
-
-
 const unsub = onSnapshot(
-
 
 doc(
 db,
@@ -224,14 +175,9 @@ db,
 friendUid
 ),
 
-
-
 (snapshot)=>{
 
-
-
 setFriends((prev)=>{
-
 
 const removed =
 
@@ -241,24 +187,14 @@ prev.filter(
 
 );
 
-
-
-
-
 // 削除済みユーザーの場合
 // 表示だけ消す
 
 if(!snapshot.exists()){
 
-
 return removed;
 
-
 }
-
-
-
-
 
 return [
 
@@ -274,32 +210,17 @@ uid:friendUid,
 
 ];
 
-
 });
-
-
 
 }
 
-
-
 );
-
-
 
 unsubList.push(unsub);
 
-
-
 });
 
-
-
-
-
-
 return ()=>{
-
 
 unsubList.forEach(
 
@@ -307,23 +228,11 @@ unsubList.forEach(
 
 );
 
-
 };
-
-
 
 },[user]);
 
-
-
-
-
-
-
-
-
 if(!user){
-
 
 return(
 
@@ -339,20 +248,9 @@ return(
 
 );
 
-
 }
 
-
-
-
-
-
-
-
-
 return(
-
-
 
 <ScrollView
 
@@ -360,15 +258,9 @@ style={styles.container}
 
 >
 
-
-
-
-
 <View style={styles.profileContainer}>
 
-
 <View style={styles.leftProfile}>
-
 
 <TouchableOpacity
 
@@ -380,7 +272,6 @@ router.push("/profile");
 
 >
 
-
 <Image
 
 source={avatars[user.avatar]}
@@ -389,12 +280,7 @@ style={styles.myIcon}
 
 />
 
-
 </TouchableOpacity>
-
-
-
-
 
 <Text style={styles.myName}>
 
@@ -402,29 +288,15 @@ style={styles.myIcon}
 
 </Text>
 
-
-
-
 </View>
 
-
-
-
-
-
-
-
-
 <View style={styles.rightProfile}>
-
 
 <Text style={styles.info}>
 
 {user.mbti}
 
 </Text>
-
-
 
 <Text style={styles.info}>
 
@@ -433,57 +305,27 @@ style={styles.myIcon}
 
 </Text>
 
-
-
-
 <Text style={styles.info}>
 
 {user.faculty}
 
 </Text>
 
-
-
-
 <Text style={styles.info}>
-
 サークル：
-{user.circle || "-"}
-
+{formatList(user.circle)}
 </Text>
-
-
-
 
 <Text style={styles.info}>
-
 講義：
-{user.courses?.split(",")[0] || "-"}
-
+{firstItem(user.courses)}
 </Text>
 
-
-
 </View>
 
-
-
-
-
-
 </View>
-
-
-
-
-
-
-
-
-
 
 <View style={styles.friendContainer}>
-
 
 <Text style={styles.title}>
 
@@ -491,17 +333,9 @@ style={styles.myIcon}
 
 </Text>
 
-
-
-
-
-
-
 {
 
 friends.map((friend)=>(
-
-
 
 <View
 
@@ -511,8 +345,6 @@ style={styles.friendRow}
 
 >
 
-
-
 <Image
 
 source={avatars[friend.avatar]}
@@ -521,82 +353,32 @@ style={styles.friendIcon}
 
 />
 
-
-
-
-
 <Text style={styles.friendText}>
 
 {friend.name}
 
-
-
 {"       "}
 
-
-
-{
-
-facultyInitial[friend.faculty]
-
-||""
-
-}
-
-
-
-：
-
-{friend.courses?.split(",")[0] || "-"}
-
-
-
+{ facultyInitial[friend.faculty] ||""}
+ : 
+ {firstItem(friend.courses)}
 </Text>
 
-
-
-
 </View>
-
-
 
 ))
 
-
 }
-
-
-
-
 
 </View>
 
-
-
-
-
-
 </ScrollView>
-
-
 
 );
 
-
-
 }
 
-
-
-
-
-
-
-
-
 const styles = StyleSheet.create({
-
-
 
 container:{
 
@@ -606,10 +388,7 @@ backgroundColor:"#ffd6dc"
 
 },
 
-
-
 profileContainer:{
-
 
 flexDirection:"row",
 
@@ -617,30 +396,17 @@ alignItems:"center",
 
 padding:20,
 
-
 },
 
-
-
-
-
 leftProfile:{
-
 
 alignItems:"center",
 
 width:150,
 
-
 },
 
-
-
-
-
-
 myIcon:{
-
 
 width:110,
 
@@ -648,15 +414,9 @@ height:110,
 
 borderRadius:55,
 
-
 },
 
-
-
-
-
 myName:{
-
 
 fontSize:24,
 
@@ -664,56 +424,31 @@ fontWeight:"bold",
 
 marginTop:10,
 
-
 },
 
-
-
-
-
 rightProfile:{
-
 
 flex:1,
 
 alignItems:"flex-start",
 
-
 },
 
-
-
-
-
 info:{
-
 
 fontSize:17,
 
 marginBottom:10,
 
-
 },
-
-
-
-
-
 
 friendContainer:{
 
-
 padding:20,
-
 
 },
 
-
-
-
-
 title:{
-
 
 fontSize:22,
 
@@ -721,16 +456,9 @@ fontWeight:"bold",
 
 marginBottom:20,
 
-
 },
 
-
-
-
-
-
 friendRow:{
-
 
 flexDirection:"row",
 
@@ -738,15 +466,9 @@ alignItems:"center",
 
 marginBottom:20,
 
-
 },
 
-
-
-
-
 friendIcon:{
-
 
 width:60,
 
@@ -754,15 +476,9 @@ height:60,
 
 borderRadius:30,
 
-
 },
 
-
-
-
-
 friendText:{
-
 
 fontSize:17,
 
@@ -770,9 +486,6 @@ marginLeft:20,
 
 flexShrink:1,
 
-
 },
-
-
 
 });

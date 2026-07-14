@@ -1,24 +1,29 @@
-import React, { useState } from "react";
+import React from "react";
 import {
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
 type Props = {
   visible: boolean;
-  name:string;
-  category:string;
-  description:string;
-  onChangeName:(text:string) => void;
-  onChangeCategory:(text:string) => void;
-  onChangeDescription:(text:string) => void;
+  name: string;
+  category: string;
+  description: string;
+  onChangeName: (text: string) => void;
+  onChangeCategory: (text: string) => void;
+  onChangeDescription: (text: string) => void;
   onClose: () => void;
-  onSubmit:() => void;
+  onSubmit: () => void;
 };
 
 export default function ShopFormModal({
@@ -32,7 +37,6 @@ export default function ShopFormModal({
   onClose,
   onSubmit,
 }: Props) {
-
   return (
     <Modal
       visible={visible}
@@ -40,40 +44,59 @@ export default function ShopFormModal({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.container}>
-          <Text style={styles.title}>店舗情報を追加</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="店舗名"
-            value={name}
-            onChangeText={onChangeName}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="カテゴリ"
-            value={category}
-            onChangeText={onChangeCategory}
-          />
-
-          <TextInput
-            style={[styles.input, styles.description]}
-            placeholder="説明"
-            multiline
-            value={description}
-            onChangeText={onChangeDescription}
-          />
-
-          <TouchableOpacity
-            style={styles.submitButton}
-            onPress={onSubmit}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.overlay}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.keyboard}
           >
-            <Text style={styles.submitText}>投稿する</Text>
-          </TouchableOpacity>
-        </Pressable>
-      </Pressable>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.scroll}
+            >
+              <Pressable style={styles.overlayTouch} onPress={onClose} />
+
+              <Pressable style={styles.container}>
+                <Text style={styles.title}>
+                  店舗情報を追加
+                </Text>
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="店舗名"
+                  value={name}
+                  onChangeText={onChangeName}
+                />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="カテゴリ"
+                  value={category}
+                  onChangeText={onChangeCategory}
+                />
+
+                <TextInput
+                  style={[styles.input, styles.description]}
+                  placeholder="説明"
+                  multiline
+                  textAlignVertical="top"
+                  value={description}
+                  onChangeText={onChangeDescription}
+                />
+
+                <TouchableOpacity
+                  style={styles.submitButton}
+                  onPress={onSubmit}
+                >
+                  <Text style={styles.submitText}>
+                    投稿する
+                  </Text>
+                </TouchableOpacity>
+              </Pressable>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 }
@@ -84,11 +107,22 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "flex-end",
   },
+  keyboard: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  scroll: {
+    flexGrow: 1,
+    justifyContent: "flex-end",
+  },
+  overlayTouch: {
+    flex: 1,
+  },
   container: {
     backgroundColor: "#fff",
-    padding: 20,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    padding: 20,
   },
   title: {
     fontSize: 20,
@@ -104,8 +138,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   description: {
-    height: 100,
-    textAlignVertical: "top",
+    height: 120,
   },
   submitButton: {
     backgroundColor: "#3B82F6",
