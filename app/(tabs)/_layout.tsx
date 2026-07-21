@@ -17,14 +17,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="baito"
         options={{
-          title: "バイト",
+          title: "評価一覧",
           headerShown: false,
         }}
       />
       <Tabs.Screen
         name="spot"
         options={{
-          title: "スポット",
+          title: "マップ",
           headerShown: false,
         }}
       />
