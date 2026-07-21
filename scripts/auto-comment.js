@@ -52,7 +52,7 @@ const fileDescriptions = {
     '// スポット投稿画面です。',
     '// Firestore から投稿を読み込み、投稿を保存できます。'
   ].join('\n'),
-  'app/(tabs)/baito.tsx': [
+  'app/(tabs)/list.tsx': [
     '// バイト情報を表示するタブ画面です。',
     '// 今は簡易的なプレースホルダ表示になっています。'
   ].join('\n'),

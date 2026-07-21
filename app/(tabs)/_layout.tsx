@@ -15,7 +15,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="baito"
+        name="list"
         options={{
           title: "評価一覧",
           headerShown: false,
