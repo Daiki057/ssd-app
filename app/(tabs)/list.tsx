@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
+
 import {
   Dimensions,
   FlatList,
@@ -9,76 +10,81 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import {
   collection,
   onSnapshot,
 } from "firebase/firestore";
-import {
-  useEffect,
-} from "react";
-import {
-  db
-} from "../../firebaseConfig";
-import { getReduceMotionFromConfig } from "react-native-reanimated/lib/typescript/animation/util";
+
+import { db } from "../../firebaseConfig";
 
 const { width } = Dimensions.get("window");
 
-const [jobs, setJobs] = useState<any[]>([]);
-const [spots, setSpots] = useState<any[]>([]);
-
-console.log(jobs);
-console.log(spots);
-
 export default function ListScreen() {
+
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [spots, setSpots] = useState<any[]>([]);
+  const [page, setPage] = useState(0);
+
   useEffect(() => {
-    const jobSubscribe =
-    onSnapshot(
+
+    const unsubscribeJobs = onSnapshot(
       collection(db, "jobs"),
       (snapshot) => {
-        const data =
-          snapshot.docs.map((doc) => ({
 
-            id: doc.id,
-            ...doc.data(),
-          }));
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
         setJobs(data);
+
       }
     );
 
-    const spotSubscribe =
-      onSnapshot(
-        collection(db, "spots"),
-        (snapshot) => {
-          const data =
-            snapshot.docs.map((doc) => ({
 
-              id: doc.id,
-              ...doc.data(),
-            }));
-          setSpots(data);
-        }
-      );
-    
+    const unsubscribeSpots = onSnapshot(
+      collection(db, "spots"),
+      (snapshot) => {
+
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setSpots(data);
+
+      }
+    );
+
+
     return () => {
-      jobSubscribe();
-      spotSubscribe();
+      unsubscribeJobs();
+      unsubscribeSpots();
     };
+
   }, []);
 
-  const [page, setPage] = useState(0);
 
   const handleScroll = (event: any) => {
+
     const pageNumber = Math.round(
       event.nativeEvent.contentOffset.x / width
     );
 
     setPage(pageNumber);
+
   };
 
+
   return (
+
     <View style={styles.container}>
+
+
       {/* Page Indicator */}
       <View style={styles.indicatorContainer}>
+
         <View
           style={[
             styles.indicator,
@@ -92,7 +98,9 @@ export default function ListScreen() {
             page === 1 && styles.activeIndicator,
           ]}
         />
+
       </View>
+
 
       <ScrollView
         horizontal
@@ -100,75 +108,125 @@ export default function ListScreen() {
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={handleScroll}
       >
+
         {/* バイト一覧 */}
         <View style={styles.page}>
+
           <Text style={styles.title}>
             バイト一覧
           </Text>
 
-          <FlatList
-            data={jobs.slice(0,3)}
-            scrollEnabled={false}
-            keyExtractor={(item) => item.name}
-            renderItem={({ item }) => (
-              <View style={styles.card}>
-                <Text style={styles.name}>
-                  {item.name}
-                </Text>
 
-                <Text style={styles.text}>
-                  時給：{item.salary}
-                </Text>
-              </View>
-            )}
-          />
+          {jobs.length === 0 ? (
+
+            <Text style={styles.emptyText}>
+              まだ投稿がありません
+            </Text>
+
+          ) : (
+
+            <FlatList
+              data={jobs.slice(0, 3)}
+              scrollEnabled={false}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+
+                <View style={styles.card}>
+
+                  <Text style={styles.name}>
+                    {item.shopName}
+                  </Text>
+
+                  <Text style={styles.text}>
+                    時給：{item.salary}
+                  </Text>
+
+                </View>
+
+              )}
+            />
+
+          )}
+
 
           <TouchableOpacity
             style={styles.moreButton}
-            onPress={() => router.push("/jobList")}>
+            onPress={() => router.push("/jobList")}
+          >
+
             <Text style={styles.moreText}>
               もっと見る
             </Text>
+
           </TouchableOpacity>
+
         </View>
+
 
         {/* スポット一覧 */}
         <View style={styles.page}>
+
           <Text style={styles.title}>
             スポット一覧
           </Text>
 
-          <FlatList
-            data={spots.slice(0,3)}
-            scrollEnabled={false}
-            keyExtractor={(item) => item.name}
-            renderItem={({ item }) => (
-              <View style={styles.card}>
-                <Text style={styles.name}>
-                  {item.name}
-                </Text>
 
-                <Text style={styles.text}>
-                  カテゴリ：{item.category}
-                </Text>
-              </View>
-            )}
-          />
+          {spots.length === 0 ? (
+
+            <Text style={styles.emptyText}>
+              まだ投稿がありません
+            </Text>
+
+          ) : (
+
+            <FlatList
+              data={spots.slice(0, 3)}
+              scrollEnabled={false}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+
+                <View style={styles.card}>
+
+                  <Text style={styles.name}>
+                    {item.name}
+                  </Text>
+
+                  <Text style={styles.text}>
+                    カテゴリ：{item.category}
+                  </Text>
+
+                </View>
+
+              )}
+            />
+
+          )}
+
 
           <TouchableOpacity
             style={styles.moreButton}
-            onPress={() => router.push("/spotList")}>
+            onPress={() => router.push("/spotList")}
+          >
+
             <Text style={styles.moreText}>
               もっと見る
             </Text>
+
           </TouchableOpacity>
+
         </View>
+
       </ScrollView>
+
     </View>
+
   );
+
 }
 
+
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",
@@ -201,8 +259,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
     textAlign: "center",
+    marginBottom: 20,
+  },
+
+  emptyText: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#777777",
+    marginVertical: 30,
   },
 
   card: {
@@ -237,4 +302,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+
 });
