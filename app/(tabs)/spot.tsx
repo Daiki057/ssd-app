@@ -5,6 +5,7 @@ import {
   collection,
   onSnapshot,
 } from "firebase/firestore";
+import * as Location from "expo-location";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -16,6 +17,7 @@ import {
 import MapView, {
   MapPressEvent,
   Marker,
+  Region,
 } from "react-native-maps";
 import AddTypeModal from "../../components/spot/AddTypeModal";
 import CategoryBar from "../../components/spot/CategoryBar";
@@ -37,6 +39,13 @@ import {
 export default function SpotScreen(){
 
   const auth = getAuth();
+
+  const [location,setLocation] = useState<Region>({
+    latitude:36.383,
+    longitude:138.248,
+    latitudeDelta:0.01,
+    longitudeDelta:0.01,
+  });
 
   const [category, setCategory] = useState<"all" | "shop" | "job">("all");
 
@@ -72,6 +81,47 @@ export default function SpotScreen(){
   const [jobSalary,setJobSalary] = useState("");
   const [jobDescription,setJobDescription] = useState("");
 
+  useEffect(()=>{
+    getCurrentLocation();
+  },[]);
+
+  const getCurrentLocation = async() => {
+    try{
+      const { status } =
+      await Location.requestForegroundPermissionsAsync();
+      if(status !== "granted"){
+        Alert.alert(
+          "位置情報が所得出来ません。",
+          "位置情報の利用を許可してください。"
+        );
+
+        return;
+      }
+
+      const currentLocation =
+      await Location.getCurrentPositionAsync({});
+
+      const newRegion = {
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+
+      setLocation(newRegion);
+      setSelectedLocation({
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+      });
+
+    }catch(error){
+      console.error(error);
+      Alert.alert(
+        "位置情報の所得に失敗しました。"
+      );
+    }
+  };
+  
   useEffect(()=>{
 
     const spotSubscribe =
@@ -356,23 +406,10 @@ export default function SpotScreen(){
       />
 
       <MapView
-
       style={styles.map}
-
-      initialRegion={{
-
-        latitude:35.0116,
-
-        longitude:135.7681,
-
-        latitudeDelta:0.01,
-
-        longitudeDelta:0.01
-
-      }}
-
+      region={location}
+      showsUserLocation={true}
       onPress={handleMapPress}
-
       >
 
       <MarkerList
